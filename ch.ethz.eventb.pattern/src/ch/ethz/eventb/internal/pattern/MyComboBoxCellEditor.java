@@ -1,4 +1,4 @@
-package edu.ethz.eventb.internal.pattern;
+package ch.ethz.eventb.internal.pattern;
 
 import org.eclipse.jface.viewers.ComboBoxCellEditor;
 import org.eclipse.swt.custom.CCombo;

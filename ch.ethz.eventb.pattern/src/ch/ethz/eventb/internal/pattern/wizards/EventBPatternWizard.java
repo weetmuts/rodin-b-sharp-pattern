@@ -1,4 +1,4 @@
-package edu.ethz.eventb.internal.pattern.wizards;
+package ch.ethz.eventb.internal.pattern.wizards;
 
 import static org.eventb.core.IConfigurationElement.DEFAULT_CONFIGURATION;
 
@@ -45,7 +45,8 @@ import org.rodinp.core.IInternalElement;
 import org.rodinp.core.IRodinFile;
 import org.rodinp.core.RodinDBException;
 
-import edu.ethz.eventb.internal.pattern.PatternUtils;
+import ch.ethz.eventb.internal.pattern.PatternUtils;
+
 
 
 

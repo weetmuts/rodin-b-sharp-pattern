@@ -1,4 +1,4 @@
-package edu.ethz.eventb.internal.pattern.wizards;
+package ch.ethz.eventb.internal.pattern.wizards;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -35,8 +35,9 @@ import org.eventb.core.IVariable;
 import org.rodinp.core.IRodinProject;
 import org.rodinp.core.RodinDBException;
 
-import edu.ethz.eventb.internal.pattern.Pair;
-import edu.ethz.eventb.internal.pattern.PatternUtils;
+import ch.ethz.eventb.internal.pattern.Pair;
+import ch.ethz.eventb.internal.pattern.PatternUtils;
+
 
 
 

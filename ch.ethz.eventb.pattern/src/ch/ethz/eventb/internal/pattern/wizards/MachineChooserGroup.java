@@ -8,7 +8,7 @@
  * Contributors:
  *     ETH Zurich - initial API and implementation
  *******************************************************************************/
-package edu.ethz.eventb.internal.pattern.wizards;
+package ch.ethz.eventb.internal.pattern.wizards;
 
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -24,8 +24,9 @@ import org.eventb.core.ISCMachineRoot;
 import org.rodinp.core.IRodinProject;
 import org.rodinp.core.RodinDBException;
 
-import edu.ethz.eventb.internal.pattern.ActionPerformer;
-import edu.ethz.eventb.internal.pattern.PatternUtils;
+import ch.ethz.eventb.internal.pattern.ActionPerformer;
+import ch.ethz.eventb.internal.pattern.PatternUtils;
+
 
 /**
  * @author htson

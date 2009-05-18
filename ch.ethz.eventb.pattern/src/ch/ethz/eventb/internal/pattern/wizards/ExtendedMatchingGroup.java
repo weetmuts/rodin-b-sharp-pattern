@@ -8,7 +8,7 @@
  * Contributors:
  *     ETH Zurich - initial API and implementation
  *******************************************************************************/
-package edu.ethz.eventb.internal.pattern.wizards;
+package ch.ethz.eventb.internal.pattern.wizards;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,7 +48,8 @@ import org.eventb.ui.IEventBSharedImages;
 import org.rodinp.core.IElementType;
 import org.rodinp.core.IInternalElementType;
 
-import edu.ethz.eventb.internal.pattern.ActionPerformer;
+import ch.ethz.eventb.internal.pattern.ActionPerformer;
+
 
 /**
  * @author fuersta

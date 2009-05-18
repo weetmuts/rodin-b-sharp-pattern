@@ -8,14 +8,15 @@
  * Contributors:
  *     ETH Zurich - initial API and implementation
  *******************************************************************************/
-package edu.ethz.eventb.internal.pattern;
+package ch.ethz.eventb.internal.pattern;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
-import edu.ethz.eventb.internal.pattern.wizards.WizardUtils;
+import ch.ethz.eventb.internal.pattern.wizards.WizardUtils;
+
 
 /**
  * @author htson
