@@ -5,11 +5,11 @@
          point="org.eclipse.ui.newWizards">
       <wizard
             category="org.eventb.ui.wizards"
-            class="edu.ethz.eventb.internal.pattern.wizards.EventBPatternWizard"
+            class="ch.ethz.eventb.internal.pattern.wizards.EventBPatternWizard"
             finalPerspective="org.eventb.ui.perspective.eventb"
             hasPages="true"
             icon="icons/sample.gif"
-            id="edu.ethz.eventb.pattern.wizards.EventBPatternWizard"
+            id="ch.ethz.eventb.pattern.wizards.EventBPatternWizard"
             name="Event-B Pattern">
       </wizard>
    </extension>

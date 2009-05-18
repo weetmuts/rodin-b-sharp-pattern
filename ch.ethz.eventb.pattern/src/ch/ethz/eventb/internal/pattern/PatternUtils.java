@@ -8,7 +8,7 @@
  * Contributors:
  *     ETH Zurich - initial API and implementation
  *******************************************************************************/
-package edu.ethz.eventb.internal.pattern;
+package ch.ethz.eventb.internal.pattern;
 
 import static org.eventb.internal.ui.EventBUtils.getFreeChildName;
 import static org.eventb.internal.ui.EventBUtils.getImplicitChildren;
@@ -67,11 +67,12 @@ import org.rodinp.core.IRodinProject;
 import org.rodinp.core.RodinCore;
 import org.rodinp.core.RodinDBException;
 
-import edu.ethz.eventb.internal.pattern.wizards.ComplexMatching;
-import edu.ethz.eventb.internal.pattern.wizards.IComplexMatching;
-import edu.ethz.eventb.internal.pattern.wizards.Matching;
-import edu.ethz.eventb.internal.pattern.wizards.MatchingMachine;
-import edu.ethz.eventb.internal.pattern.wizards.Renaming;
+import ch.ethz.eventb.internal.pattern.wizards.ComplexMatching;
+import ch.ethz.eventb.internal.pattern.wizards.IComplexMatching;
+import ch.ethz.eventb.internal.pattern.wizards.Matching;
+import ch.ethz.eventb.internal.pattern.wizards.MatchingMachine;
+import ch.ethz.eventb.internal.pattern.wizards.Renaming;
+
 
 /**
  * @author htson

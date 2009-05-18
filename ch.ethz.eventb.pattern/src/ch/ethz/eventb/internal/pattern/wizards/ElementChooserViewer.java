@@ -8,7 +8,7 @@
  * Contributors:
  *     ETH Zurich - initial API and implementation
  *******************************************************************************/
-package edu.ethz.eventb.internal.pattern.wizards;
+package ch.ethz.eventb.internal.pattern.wizards;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,7 +30,8 @@ import org.rodinp.core.IRodinElement;
 import org.rodinp.core.IRodinProject;
 import org.rodinp.core.RodinDBException;
 
-import edu.ethz.eventb.internal.pattern.PatternUtils;
+import ch.ethz.eventb.internal.pattern.PatternUtils;
+
 
 /**
  * @author htson

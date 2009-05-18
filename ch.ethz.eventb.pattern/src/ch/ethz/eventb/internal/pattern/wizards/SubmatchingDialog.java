@@ -1,4 +1,4 @@
-package edu.ethz.eventb.internal.pattern.wizards;
+package ch.ethz.eventb.internal.pattern.wizards;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;

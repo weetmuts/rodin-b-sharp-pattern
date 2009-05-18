@@ -8,7 +8,7 @@
  * Contributors:
  *     ETH Zurich - initial API and implementation
  *******************************************************************************/
-package edu.ethz.eventb.internal.pattern.wizards;
+package ch.ethz.eventb.internal.pattern.wizards;
 
 import java.util.Collection;
 

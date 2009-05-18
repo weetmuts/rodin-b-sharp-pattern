@@ -1,4 +1,4 @@
-package edu.ethz.eventb.internal.pattern.wizards;
+package ch.ethz.eventb.internal.pattern.wizards;
 
 import java.util.ArrayList;
 import java.util.List;

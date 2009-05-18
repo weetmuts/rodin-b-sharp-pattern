@@ -8,7 +8,7 @@
  * Contributors:
  *     ETH Zurich - initial API and implementation
  *******************************************************************************/
-package edu.ethz.eventb.internal.pattern.wizards;
+package ch.ethz.eventb.internal.pattern.wizards;
 
 import org.eclipse.core.runtime.Assert;
 import org.eventb.core.IEventBRoot;
@@ -25,7 +25,8 @@ import org.rodinp.core.RodinCore;
 import org.rodinp.core.RodinDBException;
 import org.rodinp.core.basis.InternalElement;
 
-import edu.ethz.eventb.internal.pattern.PatternUtils;
+import ch.ethz.eventb.internal.pattern.PatternUtils;
+
 
 /**
  * @author htson
