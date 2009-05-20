@@ -69,6 +69,10 @@ import org.eventb.core.ISCEvent;
 import org.eventb.core.ISCGuard;
 import org.eventb.core.ISeesContext;
 import org.eventb.core.IVariable;
+import org.eventb.core.ast.Assignment;
+import org.eventb.core.ast.FormulaFactory;
+import org.eventb.core.ast.FreeIdentifier;
+import org.eventb.core.ast.LanguageVersion;
 import org.eventb.core.basis.CarrierSet;
 import org.eventb.core.basis.ContextRoot;
 import org.eventb.eventBKeyboard.Text2EventBMathTranslator;
@@ -126,6 +130,8 @@ public class MatchingWizardPage extends WizardPage {
 	private ArrayList<String> comboContent;
 	
 	private Button confirmation;
+	
+//	private Button checking;
 	
 	private ActionPerformer pageChanged = new ActionPerformer();
 	
@@ -420,7 +426,7 @@ public class MatchingWizardPage extends WizardPage {
 		group.setLayoutData(gd);
 
 		
-		// Create the problem machine chooser group.
+		
 		confirmation = new Button(group,SWT.CHECK);
 		confirmation.addSelectionListener(new SelectionListener() {
 
@@ -435,8 +441,24 @@ public class MatchingWizardPage extends WizardPage {
 		});
 			
 		Label conftext = new Label(group,SWT.NONE);
-		conftext.setText("All elements of the pattern have to be matched?");
+		conftext.setText("All elements of the pattern have to be matched.");
 
+
+//		checking = new Button(group,SWT.CHECK);
+//		checking.addSelectionListener(new SelectionListener() {
+//
+//			public void widgetDefaultSelected(SelectionEvent e) {
+//				widgetSelected(e);
+//			}
+//
+//			public void widgetSelected(SelectionEvent e) {
+//				updateStatus(null);
+//			}
+//
+//		});
+//			
+//		Label checkingtext = new Label(group,SWT.NONE);
+//		checkingtext.setText("Check that not-matched events do not alter matched variables.");
 		
 		
 		// Initialise the widgets
@@ -574,6 +596,7 @@ public class MatchingWizardPage extends WizardPage {
 		carrierSetRenaming = new Renaming<ICarrierSet>();
 		constantRenaming = new Renaming<IConstant>();
 		confirmation.setSelection(true);
+//		checking.setSelection(true);
 						
 		if (selection != null && selection.isEmpty() == false
 				&& selection instanceof IStructuredSelection) {
@@ -682,6 +705,8 @@ public class MatchingWizardPage extends WizardPage {
 		}
 		if (message == null && confirmation.getSelection() && !matchingComplete())
 			message = "Not all elements of the pattern are matched";
+		if (message == null)
+			message = checkNotMatchedEvents();
 		setErrorMessage(message);
 		setPageComplete(message == null);
 	}
@@ -751,6 +776,29 @@ public class MatchingWizardPage extends WizardPage {
 			e.printStackTrace();
 		}
 		return true;
+	}
+	
+	private String checkNotMatchedEvents() {
+		try {
+			Assignment assignment;
+			Collection<String> variables = new ArrayList<String>();
+			for (Matching<IVariable> variable : variableGroup.getMatchings())
+				variables.add(variable.getProblemID());
+			FormulaFactory ff = FormulaFactory.getDefault();
+			for (IEvent event : problemGroup.getMachineChooser().getElement().getEvents()) {
+				if (!PatternUtils.isInMatchings(null, event, eventGroup.getMatchings())){
+					for (IAction action : event.getActions()){
+						assignment = ff.parseAssignment(action.getAssignmentString(), LanguageVersion.LATEST, null).getParsedAssignment();
+						for (FreeIdentifier free : assignment.getAssignedIdentifiers())
+							if (variables.contains(free.getName()))
+								return "The not-matched event '" + event.getLabel() + "' alters the matched variable '" + free.getName() + "'!";
+					}
+				}
+			}
+		} catch (RodinDBException e) {
+		}
+		return null;
+		
 	}
 
 }
