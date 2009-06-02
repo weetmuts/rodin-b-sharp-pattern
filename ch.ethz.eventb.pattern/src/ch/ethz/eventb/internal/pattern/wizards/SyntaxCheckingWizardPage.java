@@ -304,7 +304,6 @@ public class SyntaxCheckingWizardPage extends WizardPage {
 	private void updateStatus(String message) {
 		setErrorMessage(message);
 		setPageComplete(message == null);
-		this.getContainer().updateButtons();
 	}
 
 }

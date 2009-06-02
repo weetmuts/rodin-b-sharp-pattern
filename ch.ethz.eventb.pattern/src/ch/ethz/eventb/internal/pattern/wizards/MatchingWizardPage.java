@@ -55,6 +55,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.help.IWorkbenchHelpSystem;
+import org.eclipse.ui.help.WorkbenchHelp;
+import org.eclipse.ui.internal.help.WorkbenchHelpSystem;
 import org.eventb.core.IAction;
 import org.eventb.core.ICarrierSet;
 import org.eventb.core.IConstant;
@@ -137,8 +141,7 @@ public class MatchingWizardPage extends WizardPage {
 	
 	private Collection<IRodinFile> openFiles;
 	
-	
-	
+		
 
 	/**
 	 * @author fuersta
@@ -392,8 +395,8 @@ public class MatchingWizardPage extends WizardPage {
 		variableGroup.getActionPerformer().addListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
 				variableGroup.setInput(matching);
-				updateStatus(null);
 				pageChanged.performAction();
+				updateStatus(null);
 			}
 		});
 		
@@ -409,8 +412,8 @@ public class MatchingWizardPage extends WizardPage {
 		eventGroup.getActionPerformer().addListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
 				eventGroup.setInput(matching);
-				updateStatus(null);
 				pageChanged.performAction();
+				updateStatus(null);
 			}
 		});
 		
@@ -468,7 +471,9 @@ public class MatchingWizardPage extends WizardPage {
 			
 		// Set the main control of the wizard.
 		setControl(container);
+				
 	}
+
 
 	/**
 	 * Utility method to be called when the pattern machine changed.

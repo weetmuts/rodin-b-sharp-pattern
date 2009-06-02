@@ -561,7 +561,6 @@ public class RenamingWizardPage extends WizardPage {
 			message = checkRenaming();
 		setErrorMessage(message);
 		setPageComplete(message == null);
-		this.getContainer().updateButtons();
 	}
 
 	public Renaming<IVariable> getRenamingVariables() {
