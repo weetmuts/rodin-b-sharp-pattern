@@ -13,7 +13,6 @@ package ch.ethz.eventb.internal.pattern.wizards;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.eclipse.core.runtime.Assert;
 import org.eventb.core.IEvent;
 import org.rodinp.core.IElementType;
 import org.rodinp.core.IInternalElement;
@@ -67,7 +66,7 @@ public class ComplexMatching<T extends IInternalElement> extends Matching<T>
 				result.add((Matching<S>) matching);
 			}
 		}
-		return result.toArray(new Matching[result.size()]);
+		return result.  toArray(new Matching[result.size()]);
 	}
 	
 	public ComplexMatching<IEvent>[] getChildrenOfTypeEvent() {
@@ -125,10 +124,6 @@ public class ComplexMatching<T extends IInternalElement> extends Matching<T>
 	 * (edu.ethz.eventb.internal.pattern.wizards.Matching)
 	 */
 	public <S extends IInternalElement> void addMatching(S patternElement, S problemElement, IInternalElementType<S> type) {
-//		Assert.isLegal(problemElement.getParent().equals(
-//				this.getProblemElement()), "Illegal problem element");
-//		Assert.isLegal(patternElement.getParent().equals(
-//				this.getPatternElement()), "Illegal pattern element");
 		try {
 			matchings.add(new Matching<S>(problemElement, patternElement, type,this));
 		} catch (RodinDBException e) {
@@ -136,10 +131,6 @@ public class ComplexMatching<T extends IInternalElement> extends Matching<T>
 	}
 	
 	public <S extends IInternalElement> void addComplexMatching(S patternElement, S problemElement, IInternalElementType<S> type) {
-//		Assert.isLegal(problemElement.getParent().equals(
-//				this.getProblemElement()), "Illegal problem element");
-//		Assert.isLegal(patternElement.getParent().equals(
-//				this.getPatternElement()), "Illegal pattern element");
 		try {
 			matchings.add(new ComplexMatching<S>(problemElement, patternElement, type,this));
 		} catch (RodinDBException e) {
@@ -154,8 +145,8 @@ public class ComplexMatching<T extends IInternalElement> extends Matching<T>
 	 * (edu.ethz.eventb.internal.pattern.wizards.Matching)
 	 */
 	public <S extends IInternalElement> void removeMatching(Matching<S> matching) {
-		Assert.isTrue(matchings.contains(matching), "Matching not available");
-		matchings.remove(matching);
+		if (matchings.contains(matching))
+			matchings.remove(matching);
 	}
 	
 }

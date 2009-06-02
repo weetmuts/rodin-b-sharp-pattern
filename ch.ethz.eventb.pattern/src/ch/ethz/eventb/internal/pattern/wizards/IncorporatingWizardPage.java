@@ -598,6 +598,7 @@ public class IncorporatingWizardPage extends WizardPage {
 		if(matchingPage.getMatching() != null)
 			variableMatching = matchingPage.getMatching().getChildrenOfType(IVariable.ELEMENT_TYPE);
 		generatePO.setSelection(true);
+		doGeneratePO = true;
 	}
 
 	/**

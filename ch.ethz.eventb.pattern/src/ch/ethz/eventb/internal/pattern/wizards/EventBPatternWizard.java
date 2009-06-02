@@ -91,6 +91,8 @@ public class EventBPatternWizard extends Wizard implements INewWizard {
 	public EventBPatternWizard() {
 		super();
 		setNeedsProgressMonitor(true);
+		
+			
 		openFiles = new ArrayList<IRodinFile>();
 		specMap = new HashMap<FreeIdentifier, Expression>();
 		refMap = new HashMap<FreeIdentifier, Expression>();
@@ -99,9 +101,8 @@ public class EventBPatternWizard extends Wizard implements INewWizard {
 	}
 	
 	/**
-	 * Adding the page to the wizard.
+	 * Adding the pages to the wizard.
 	 */
-
 	public void addPages() {
 		matchingPage = new MatchingWizardPage(selection, openFiles);
 		addPage(matchingPage);
@@ -192,6 +193,7 @@ public class EventBPatternWizard extends Wizard implements INewWizard {
 	
 	@Override
 	public boolean performCancel() {
+			
 		for (IRodinFile file : openFiles) {
 			try {
 				if (file != null && !file.isConsistent())

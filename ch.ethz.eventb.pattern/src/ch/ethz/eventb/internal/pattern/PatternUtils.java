@@ -18,9 +18,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -86,13 +83,6 @@ import ch.ethz.eventb.internal.pattern.wizards.Renaming;
  */
 public class PatternUtils {
 	
-
-	
-
-	
-	private static final Pattern patternMatching = Pattern.compile("([a-zA-Z0-9\\_]+)");  //[a-zA-Z0-9\\s{0}\\-\\_ ]*
-
-
 	/**
 	 * The debug flag. This is set by the option when the plug-in is started.
 	 * Client should not try to reset this flag.
