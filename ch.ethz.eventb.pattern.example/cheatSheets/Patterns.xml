@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cheatsheet
+      title="Pattern Plug-in">
+   <intro>
+      <description>
+         This is a little guide for users how to use the pattern plug-in demonstrated on a simple example.
+      </description>
+   </intro>
+   <item
+         title="Set up">
+      <description>
+         In order to do this example, the example projects have to be in the workspace.
+      </description>
+      <subitem
+            label="Import the problem project of the example (RequestConfirm) into the workspace."
+            skip="true">
+         <command
+               required="true"
+               serialization="org.eclipse.ui.file.import(importWizardId=org.eclipse.ui.wizards.import.ExternalProject)"/>
+      </subitem>
+      <subitem
+            label="Import the pattern project of the example (SingleCom) into the workspace."
+            skip="true">
+         <command
+               required="true"
+               serialization="org.eclipse.ui.file.import(importWizardId=org.eclipse.ui.wizards.import.ExternalProject)"/>
+      </subitem>
+   </item>
+   <item
+         skip="false"
+         dialog="true"
+         title="Starting the wizard">
+      <description>
+         Click on the <b>New</b>-button or select <b>File-&gt;New-&gt;Other...</b>
+Select then the <b>Event-B Pattern</b>-Wizard in the Event-B Group and click on <b>Next&gt;</b>.
+<br/><br/>
+To be able to continue with this guide within the wizard, please use the command below to start the wizard.
+      </description>
+      <command
+            required="true"
+            serialization="org.eclipse.ui.newWizard(newWizardId=ch.ethz.eventb.pattern.wizards.EventBPatternWizard)"/>
+   </item>
+   <item
+         title="Select the problem at hand">
+      <description>
+         On the top right corner of the first page, you can choose the machine where the pattern should be applied to (problem machine).<br/><br/>
+If a file was selected before starting the wizard, its corresponding machine is set as problem machine.
+<br/><br/>
+Choose <b>RequestConfirm</b> as project and <b>request_confirm_0</b> as machine.
+      </description>
+   </item>
+   <item
+         title="Select the pattern">
+      <description>
+         On the top left corner, you can choose the pattern machine to which the problem should be matched (pattern specification). 
+<br/><br/>
+Choose <b>SingleCom</b> as project and <b>single_com_0</b> as machine.
+      </description>
+   </item>
+   <item
+         title="Match the variables">
+      <description>
+         In this example we will first to incorporate the pattern for the transfer of the question.<br/> <br/>
+Set the matching <b>transferred--&gt; requested</b> in the variable group with the following steps:
+      </description>
+      <subitem
+            label="Select &quot;transferred&quot; in the left combo box."
+            skip="false">
+      </subitem>
+      <subitem
+            label="Select &quot;requested&quot; in the right combo box."
+            skip="false">
+      </subitem>
+      <subitem
+            label="Click on the &quot;Add Matching&quot;-button."
+            skip="false">
+      </subitem>
+   </item>
+   <item
+         title="Match the events">
+      <description>
+         Set the matching <b>transfers--&gt;  requests</b> in the event group with the following steps. Note that the matching of the init events is set by default:
+      </description>
+      <subitem
+            label="Select &quot;transfers&quot; in the left combo box.">
+      </subitem>
+      <subitem
+            label="Select &quot;requests&quot; in the right combo box.">
+      </subitem>
+      <subitem
+            label="Click on the &quot;Add Matching&quot;-button.">
+      </subitem>
+   </item>
+   <item
+         title="Add the sub-matchings">
+      <description>
+         For every event, one has to enter the pairs of guards/actions being syntactically the same.<br/><br/>
+To open the dialog where the sub-matchings can be entered double-click on the event matching.
+      </description>
+      <subitem
+            label="Double-click on &quot;INITIALISATION--&gt;INITIALISATION&quot; to open the sub-matching dialog.">
+      </subitem>
+      <subitem
+            label="Add the action sub-matching &quot;transferred := FALSE --&gt; requested := FALSE&quot;.">
+      </subitem>
+      <subitem
+            label="Finish the dialog by clicking on the &quot;OK&quot;-button">
+      </subitem>
+      <subitem
+            label="Double-click on &quot;transfers--&gt;requests&quot; to open the sub-matching dialog.">
+      </subitem>
+      <subitem
+            label="Add the guard sub-matching &quot;transferred = FALSE --&gt; requested = FALSE&quot;.">
+      </subitem>
+      <subitem
+            label="Add the action sub-matching &quot;transferred := TRUE --&gt; requested := TRUE&quot;.">
+      </subitem>
+      <subitem
+            label="Finish the dialog by clicking on the &quot;OK&quot;-button">
+      </subitem>
+   </item>
+   <item
+         title="Next Page">
+      <description>
+         The matching is now complete and therefore the <b>Next &gt;</b>-button is enabled. Click on it to continue with the syntactical checking.
+      </description>
+   </item>
+   <item
+         title="Syntactical Check">
+      <description>
+         The sub-matchings that were entered on the previous page have to be checked for their syntactical equality. This step is not yet automated. Therefore, the check has to be done manually and confirmed with a tick in the box at the bottom.
+      </description>
+   </item>
+   <item
+         title="Next Page">
+      <description>
+         The matching is now accepted as a correct one and the <b>Next &gt;</b>-button is enabled. Click on it to continue with the renaming.
+      </description>
+   </item>
+   <item
+         title="Select the pattern refinement">
+      <description>
+         On the top, you have to choose <b>single_com_1</b> as the machine that should be incorporated into the problem at hand.<br/><br/>
+After choosing the machine, you see a list of variables and a list of events that are going to be copied. To prevent name clashes rename them if necessary.
+      </description>
+   </item>
+   <item
+         title="Next Page">
+      <description>
+         If there are no name clashes the <b>Next &gt;</b>-button is enabled. Click on it to continue with the syntactical checking.
+      </description>
+   </item>
+   <item
+         title="Name for new machine">
+      <description>
+         Set the name for the new machine in the text field at the very top.
+      </description>
+   </item>
+   <item
+         title="Extraction">
+      <description>
+         On the top section of this page, all the invariants of the pattern refinement are listed.<br/><br/>
+For the disappearing variable <b>transferred</b> listed in the middle section you have to extract the glueing invariant. Write the replacement for <b>transferred</b>, which is <b>sent</b>, into the text field next to transferred.
+      </description>
+   </item>
+   <item
+         skip="true"
+         title="Generate the PO&apos;s">
+      <description>
+         At the bottom of the page you can choose whether you want the proof obligations to be generated or not.
+      </description>
+   </item>
+   <item
+         title="Finish the wizard">
+      <description>
+         When everything is set and no errors are left you can start the generation of the new problem refinement by clicking on the <b>Finish</b>-button.
+      </description>
+   </item>
+   <item
+         skip="false"
+         dialog="true"
+         title="Once again">
+      <description>
+         Start the wizard a second time to apply the pattern for the transfer of the response.
+      </description>
+      <command
+            required="true"
+            serialization="org.eclipse.ui.newWizard(newWizardId=ch.ethz.eventb.pattern.wizards.EventBPatternWizard)"/>
+      
+   </item>
+   <item
+         title="Choose the machines">
+      <description>
+         Select the machine that you just generated as problem machine.
+<br/><br/>
+Select again <b>SingleCom</b> as pattern.
+      </description>
+   </item>
+   <item
+         title="Enter the matchings">
+      <description>
+         <b>transferred --&gt; confirmed</b>
+<br/><br/>
+<b>transfers --&gt; confirms</b>
+      </description>
+   </item>
+   <item
+         title="Enter the sub-matchings">
+      <description>
+         Do the same as before for both event matchings. Be aware of the extra guard in the confirms event.
+      </description>
+   </item>
+   <item
+         title="Syntactical Check">
+      <description>
+         Check the correctness of the sub-matchings.
+      </description>
+   </item>
+   <item
+         title="Renaming">
+      <description>
+         Select again <b>single_com_1</b> as pattern refinement.
+<br/><br/>
+Do a renaming if necessary.
+      </description>
+   </item>
+   <item
+         title="Extraction">
+      <description>
+         Set the name for the new refinement.
+<br/><br/>
+Set <b>sent</b> as replacement for <b>transferred</b>.
+<br/><br/>
+Select whether the proof obligations should be generated.
+      </description>
+   </item>
+   <item
+         title="Finish the wizard">
+      <description>
+         Finish the wizard by clicking on the <b>Finish</b>-button.
+      </description>
+   </item>
+</cheatsheet>
