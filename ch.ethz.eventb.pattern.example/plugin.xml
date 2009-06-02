@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.cheatsheets.cheatSheetContent">
+      <cheatsheet
+            composite="false"
+            contentFile="cheatSheets/Patterns.xml"
+            id="ch.ethz.eventb.pattern.cheatsheet"
+            name="Pattern plug-in">
+      </cheatsheet>
+   </extension>
+
+</plugin>
