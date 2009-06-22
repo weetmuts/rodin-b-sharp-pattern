@@ -10,9 +10,6 @@
  *******************************************************************************/
 package ch.ethz.eventb.internal.pattern.wizards;
 
-import static org.eventb.internal.ui.EventBUtils.getFreeChildName;
-import static org.eventb.internal.ui.EventBUtils.getImplicitChildren;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.InvocationTargetException;
@@ -21,7 +18,6 @@ import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.Dialog;
@@ -30,22 +26,16 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.EditingSupport;
-import org.eclipse.jface.viewers.ICellEditorValidator;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
-import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -54,38 +44,22 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.help.IWorkbenchHelpSystem;
-import org.eclipse.ui.help.WorkbenchHelp;
-import org.eclipse.ui.internal.help.WorkbenchHelpSystem;
 import org.eventb.core.IAction;
 import org.eventb.core.ICarrierSet;
 import org.eventb.core.IConstant;
 import org.eventb.core.IContextRoot;
 import org.eventb.core.IEvent;
-import org.eventb.core.IEventBRoot;
 import org.eventb.core.IGuard;
 import org.eventb.core.IMachineRoot;
-import org.eventb.core.IRefinesEvent;
-import org.eventb.core.ISCAction;
-import org.eventb.core.ISCEvent;
-import org.eventb.core.ISCGuard;
 import org.eventb.core.ISeesContext;
 import org.eventb.core.IVariable;
 import org.eventb.core.ast.Assignment;
 import org.eventb.core.ast.FormulaFactory;
 import org.eventb.core.ast.FreeIdentifier;
 import org.eventb.core.ast.LanguageVersion;
-import org.eventb.core.basis.CarrierSet;
-import org.eventb.core.basis.ContextRoot;
 import org.eventb.eventBKeyboard.Text2EventBMathTranslator;
-import org.eventb.internal.ui.EventBUtils;
-import org.eventb.internal.ui.eventbeditor.manipulation.ExtendedAttributeManipulation;
 import org.rodinp.core.IInternalElement;
-import org.rodinp.core.IInternalElementType;
 import org.rodinp.core.IRodinDB;
-import org.rodinp.core.IRodinElement;
 import org.rodinp.core.IRodinFile;
 import org.rodinp.core.IRodinProject;
 import org.rodinp.core.RodinCore;
@@ -106,6 +80,8 @@ import ch.ethz.eventb.internal.pattern.PatternUtils;
  */
 public class MatchingWizardPage extends WizardPage {
 
+	private MatchingWizardPage page;
+	
 	private ISelection selection;
 	
 	// Problem machine chooser group
@@ -140,6 +116,8 @@ public class MatchingWizardPage extends WizardPage {
 	private ActionPerformer pageChanged = new ActionPerformer();
 	
 	private Collection<IRodinFile> openFiles;
+	
+	private Dialog dialog;
 	
 		
 
@@ -238,7 +216,32 @@ public class MatchingWizardPage extends WizardPage {
 		setDescription("This step is for developer to choose the matching of variables and events");
 		this.selection = selection;
 		this.openFiles = openFiles;
+		page = this;
 	}
+	
+	
+	public void loadMatchingMachine(MatchingMachine matching, 
+			Renaming<ICarrierSet> carrierSetRenaming,
+			Renaming<IConstant> constantRenaming){
+		
+		patternGroup.getProjectChooser().setElement(matching.getPatternProject());
+		patternGroup.getMachineChooser().setElement(matching.getPatternElement());
+		patternMachineChanged();
+		problemGroup.getProjectChooser().setElement(matching.getProblemProject());
+		problemGroup.getMachineChooser().setElement(matching.getProblemElement());
+		problemMachineChanged();
+		this.matching = matching;
+		variableGroup.setInput(matching);
+		eventGroup.setInput(matching);
+		this.carrierSetRenaming = carrierSetRenaming;
+		this.constantRenaming = constantRenaming;
+		context.setInput(matching);
+		combo.setItems(comboContent.toArray(new String[comboContent.size()]));
+		pageChanged.performAction();
+	}
+	
+	
+
 
 	/*
 	 * (non-Javadoc)
@@ -291,7 +294,7 @@ public class MatchingWizardPage extends WizardPage {
 		contextGroup.setLayoutData(gd);
 		contextGroup.setLayout(gl);
 		
-		context = new TableViewer(contextGroup, SWT.NULL);
+		context = new TableViewer(contextGroup, SWT.BORDER);
 		
 		context.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
 		
@@ -445,7 +448,56 @@ public class MatchingWizardPage extends WizardPage {
 			
 		Label conftext = new Label(group,SWT.NONE);
 		conftext.setText("All elements of the pattern have to be matched.");
+		
+		
+		final Group filegroup = new Group(container, SWT.DEFAULT);
+		gl = new GridLayout();
+		gl.numColumns = 2;
+		gl.verticalSpacing = 9;
+		filegroup.setLayout(gl);
+		filegroup.setText("Matching file");
+		gd = new GridData(GridData.FILL_HORIZONTAL);
+		gd.horizontalSpan = 2;
+		filegroup.setLayoutData(gd);
 
+		
+		
+		Button savefile = new Button(filegroup,SWT.PUSH);
+		savefile.setText("Save Matching");
+		savefile.addSelectionListener(new SelectionListener() {
+
+			public void widgetDefaultSelected(SelectionEvent e) {
+				widgetSelected(e);
+			}
+
+			public void widgetSelected(SelectionEvent e) {
+				if (matching != null){
+					dialog = new SaveDialog(filegroup.getShell(), "Save Matching", page);
+					dialog.open();
+					updateStatus(null);
+				}
+			}
+
+		});
+		
+		Button loadfile = new Button(filegroup,SWT.PUSH);
+		loadfile.setText("Load Matching");
+		loadfile.addSelectionListener(new SelectionListener() {
+
+			public void widgetDefaultSelected(SelectionEvent e) {
+				widgetSelected(e);
+			}
+
+			public void widgetSelected(SelectionEvent e) {
+				dialog = new LoadDialog(filegroup.getShell(), "Load Matching", page);
+				dialog.open();
+				updateStatus(null);
+			}
+
+		});
+			
+		
+		
 
 //		checking = new Button(group,SWT.CHECK);
 //		checking.addSelectionListener(new SelectionListener() {
@@ -724,7 +776,7 @@ public class MatchingWizardPage extends WizardPage {
 	public MatchingMachine getMatching() {
 		return matching;
 	}
-
+	
 	/**
 	 * Return the pattern machine chooser group. This is used by the Renaming
 	 * page {@link RenamingWizardPage}.

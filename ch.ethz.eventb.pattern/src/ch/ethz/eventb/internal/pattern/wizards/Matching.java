@@ -10,20 +10,15 @@
  *******************************************************************************/
 package ch.ethz.eventb.internal.pattern.wizards;
 
-import org.eclipse.core.runtime.Assert;
 import org.eventb.core.IEventBRoot;
 import org.eventb.core.IIdentifierElement;
 import org.eventb.core.ILabeledElement;
-import org.eventb.core.IMachineRoot;
 import org.eventb.core.ISCIdentifierElement;
-import org.eventb.core.basis.SCIdentifierElement;
 import org.rodinp.core.IElementType;
 import org.rodinp.core.IInternalElement;
 import org.rodinp.core.IInternalElementType;
 import org.rodinp.core.IRodinElement;
-import org.rodinp.core.RodinCore;
 import org.rodinp.core.RodinDBException;
-import org.rodinp.core.basis.InternalElement;
 
 import ch.ethz.eventb.internal.pattern.PatternUtils;
 
@@ -91,6 +86,14 @@ public class Matching<T extends IInternalElement> implements IMatching<T> {
 		this.parents = parents;
 	}
 
+	public Matching(String problem, String pattern, IInternalElementType<T> type, IComplexMatching<? extends IRodinElement> parents, boolean hasLabel) throws RodinDBException {
+		this.problem = problem;
+		this.pattern = pattern;
+		this.hasLabel = hasLabel;
+		this.type = type;
+		this.parents = parents;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 

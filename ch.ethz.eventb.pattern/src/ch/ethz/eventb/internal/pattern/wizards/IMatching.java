@@ -12,7 +12,6 @@ package ch.ethz.eventb.internal.pattern.wizards;
 
 import org.rodinp.core.IElementType;
 import org.rodinp.core.IInternalElement;
-import org.rodinp.core.IRodinElement;
 
 /**
  * @author htson

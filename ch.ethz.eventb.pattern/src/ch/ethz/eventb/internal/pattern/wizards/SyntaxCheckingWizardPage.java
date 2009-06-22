@@ -28,10 +28,6 @@ import org.eventb.core.IAction;
 import org.eventb.core.IEvent;
 import org.eventb.core.IGuard;
 import org.eventb.core.IParameter;
-import org.eventb.core.ISCAction;
-import org.eventb.core.ISCEvent;
-import org.eventb.core.ISCGuard;
-import org.eventb.core.ISCParameter;
 import org.eventb.ui.EventBUIPlugin;
 import org.eventb.ui.IEventBSharedImages;
 
@@ -129,11 +125,11 @@ public class SyntaxCheckingWizardPage extends WizardPage {
 
 		public Image getImage(Object element) {
 			if (element instanceof Matching && ((Matching)element).getType().equals(IGuard.ELEMENT_TYPE))
-				return EventBUIPlugin.getDefault().getImageRegistry().get(IEventBSharedImages.IMG_VARIABLE);
+				return EventBUIPlugin.getDefault().getImageRegistry().get(IEventBSharedImages.IMG_GUARD);
 			else if (element instanceof Matching && ((Matching)element).getType().equals(IParameter.ELEMENT_TYPE))
-				return EventBUIPlugin.getDefault().getImageRegistry().get(IEventBSharedImages.IMG_CARRIER_SET);
+				return EventBUIPlugin.getDefault().getImageRegistry().get(IEventBSharedImages.IMG_PARAMETER);
 			else if (element instanceof Matching && ((Matching)element).getType().equals(IAction.ELEMENT_TYPE))
-				return EventBUIPlugin.getDefault().getImageRegistry().get(IEventBSharedImages.IMG_AXIOM);
+				return EventBUIPlugin.getDefault().getImageRegistry().get(IEventBSharedImages.IMG_ACTION);
 			else if (element instanceof ComplexMatching && ((ComplexMatching)element).getType().equals(IEvent.ELEMENT_TYPE))
 				return EventBUIPlugin.getDefault().getImageRegistry().get(IEventBSharedImages.IMG_EVENT);
 			else

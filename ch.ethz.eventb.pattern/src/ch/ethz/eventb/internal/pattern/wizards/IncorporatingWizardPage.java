@@ -4,7 +4,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.dialogs.IDialogPage;
@@ -34,12 +33,9 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eventb.core.IEvent;
 import org.eventb.core.IEventBProject;
-import org.eventb.core.IInvariant;
 import org.eventb.core.IMachineRoot;
-import org.eventb.core.IParameter;
 import org.eventb.core.IVariable;
 import org.eventb.core.IWitness;
-import org.rodinp.core.IRodinElement;
 import org.rodinp.core.IRodinFile;
 import org.rodinp.core.RodinDBException;
 

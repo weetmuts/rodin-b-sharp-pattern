@@ -13,7 +13,6 @@ package ch.ethz.eventb.internal.pattern.wizards;
 import java.util.Collection;
 
 import org.eventb.core.IEvent;
-import org.eventb.core.ISCEvent;
 import org.rodinp.core.IElementType;
 import org.rodinp.core.IInternalElement;
 import org.rodinp.core.IInternalElementType;

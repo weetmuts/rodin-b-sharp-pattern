@@ -50,6 +50,11 @@ public class ComplexMatching<T extends IInternalElement> extends Matching<T>
 		super(problem, pattern, type, parents);
 		matchings = new ArrayList<Matching<?>>();
 	}
+	
+	public ComplexMatching(String problem, String pattern, IInternalElementType<T> type, IComplexMatching<? extends IRodinElement> parents, boolean hasLabel) throws RodinDBException {
+		super(problem, pattern, type, parents, hasLabel);
+		matchings = new ArrayList<Matching<?>>();
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -130,11 +135,28 @@ public class ComplexMatching<T extends IInternalElement> extends Matching<T>
 		}
 	}
 	
+	public <S extends IInternalElement> void addMatching(String patternElement, String problemElement, IInternalElementType<S> type, boolean hasLabel) {
+		try {
+			matchings.add(new Matching<S>(problemElement, patternElement, type, this, hasLabel));
+		} catch (RodinDBException e) {
+		}
+	}
+	
 	public <S extends IInternalElement> void addComplexMatching(S patternElement, S problemElement, IInternalElementType<S> type) {
 		try {
 			matchings.add(new ComplexMatching<S>(problemElement, patternElement, type,this));
 		} catch (RodinDBException e) {
 		}
+	}
+	
+	public <S extends IInternalElement> ComplexMatching<S> addComplexMatching(String patternElement, String problemElement, IInternalElementType<S> type, boolean hasLabel) {
+		ComplexMatching<S> cplx = null;
+		try {
+			cplx = new ComplexMatching<S>(problemElement, patternElement, type, this, hasLabel);
+			matchings.add(cplx);
+		} catch (RodinDBException e) {
+		}
+		return cplx;
 	}
 
 	/*

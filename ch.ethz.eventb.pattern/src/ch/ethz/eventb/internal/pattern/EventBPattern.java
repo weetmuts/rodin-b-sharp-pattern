@@ -27,7 +27,7 @@ import ch.ethz.eventb.internal.pattern.wizards.WizardUtils;
 public class EventBPattern extends AbstractUIPlugin {
 
 	// The plug-in ID
-	public static final String PLUGIN_ID = "edu.ethz.eventb.pattern";
+	public static final String PLUGIN_ID = "ch.ethz.eventb.pattern";
 
 	// The shared instance
 	private static EventBPattern plugin;

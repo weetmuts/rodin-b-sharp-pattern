@@ -12,10 +12,6 @@ import org.eventb.core.IAction;
 import org.eventb.core.IEvent;
 import org.eventb.core.IGuard;
 import org.eventb.core.IParameter;
-import org.eventb.core.ISCAction;
-import org.eventb.core.ISCEvent;
-import org.eventb.core.ISCGuard;
-import org.eventb.core.ISCParameter;
 import org.rodinp.core.RodinDBException;
 
 /**
