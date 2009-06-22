@@ -18,6 +18,7 @@ import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
@@ -31,6 +32,7 @@ import org.rodinp.core.IRodinProject;
 import org.rodinp.core.RodinDBException;
 
 import ch.ethz.eventb.internal.pattern.PatternUtils;
+import ch.ethz.eventb.pattern.core.IPatternRoot;
 
 
 /**
@@ -102,6 +104,15 @@ public class ElementChooserViewer<T extends IRodinElement> extends ComboViewer {
 				// If the type is IMachineRoot then return the list of
 				// IMachineRoot.
 				if (type == IMachineRoot.ELEMENT_TYPE) {
+					try {
+						return project.getRootElementsOfType((IInternalElementType<?>) type);
+					} catch (RodinDBException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+						return null;
+					}
+				}
+				else if (type == IPatternRoot.ELEMENT_TYPE) {
 					try {
 						return project.getRootElementsOfType((IInternalElementType<?>) type);
 					} catch (RodinDBException e) {
@@ -235,8 +246,14 @@ public class ElementChooserViewer<T extends IRodinElement> extends ComboViewer {
 	@SuppressWarnings("unchecked")
 	public T getElement() {
 		IStructuredSelection selection = (IStructuredSelection) getSelection();
-
+		
 		return (T) selection.getFirstElement();
 	}
+	
+	public void setElement(Object obj) {
+		IStructuredSelection selection = new StructuredSelection(obj);
+		setSelection(selection, true);
+	}
+
 
 }

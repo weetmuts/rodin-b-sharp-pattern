@@ -10,8 +10,6 @@
  *******************************************************************************/
 package ch.ethz.eventb.internal.pattern.wizards;
 
-import java.util.Collection;
-
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -30,15 +28,11 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.TableItem;
-import org.eventb.core.IMachineRoot;
-import org.rodinp.core.IElementType;
 import org.rodinp.core.IInternalElement;
 import org.rodinp.core.IInternalElementType;
-import org.rodinp.core.IRodinElement;
 import org.rodinp.core.RodinDBException;
 
 import ch.ethz.eventb.internal.pattern.ActionPerformer;
-import ch.ethz.eventb.internal.pattern.PatternUtils;
 
 
 /**

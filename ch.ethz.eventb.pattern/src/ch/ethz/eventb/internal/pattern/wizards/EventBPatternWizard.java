@@ -34,7 +34,6 @@ import org.eventb.core.IParameter;
 import org.eventb.core.IRefinesEvent;
 import org.eventb.core.IRefinesMachine;
 import org.eventb.core.ISeesContext;
-
 import org.eventb.core.IVariable;
 import org.eventb.core.IWitness;
 import org.eventb.core.IConvergenceElement.Convergence;

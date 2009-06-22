@@ -6,7 +6,6 @@ import java.util.List;
 import org.eventb.core.IEvent;
 import org.eventb.core.IIdentifierElement;
 import org.eventb.core.ILabeledElement;
-import org.eventb.core.IParameter;
 import org.eventb.core.IWitness;
 import org.rodinp.core.IInternalElement;
 import org.rodinp.core.RodinDBException;

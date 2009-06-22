@@ -10,7 +10,6 @@
  *******************************************************************************/
 package ch.ethz.eventb.internal.pattern.wizards;
 
-import org.eventb.core.IEvent;
 import org.eventb.core.IMachineRoot;
 import org.rodinp.core.IRodinProject;
 import org.rodinp.core.RodinDBException;
@@ -64,6 +63,14 @@ public class MatchingMachine extends ComplexMatching<IMachineRoot> implements
 		} catch (RodinDBException e) {
 			return null;
 		}
+	}
+	
+	public IRodinProject getPatternProject() {
+		return patternProject;
+	}
+	
+	public IRodinProject getProblemProject() {
+		return problemProject;
 	}
 	
 }

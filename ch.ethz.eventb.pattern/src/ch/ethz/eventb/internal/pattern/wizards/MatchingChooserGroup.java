@@ -22,6 +22,7 @@ import org.eventb.core.IMachineRoot;
 import org.rodinp.core.IRodinProject;
 
 import ch.ethz.eventb.internal.pattern.ActionPerformer;
+import ch.ethz.eventb.pattern.core.IPatternRoot;
 
 
 /**
@@ -39,13 +40,13 @@ import ch.ethz.eventb.internal.pattern.ActionPerformer;
  *         The selected project is always the input of the machine element chooser.
  *         </p>
  */
-public class MachineChooserGroup {
+public class MatchingChooserGroup {
 
 	// The project element chooser.
 	private ElementChooserViewer<IRodinProject> projectChooser;
 	
 	// The machine element chooser.
-	private  ElementChooserViewer<IMachineRoot> machineChooser;
+	private  ElementChooserViewer<IPatternRoot> matchingChooser;
 	
 	// The main Group widget.
 	private Group group;
@@ -63,7 +64,7 @@ public class MachineChooserGroup {
 	 * @param style
 	 *            the style to create the Group widget.
 	 */
-	public MachineChooserGroup(Composite parent, int style) {
+	public MatchingChooserGroup(Composite parent, int style) {
 		group = new Group(parent, style);
 		createContents();
 	}
@@ -89,7 +90,7 @@ public class MachineChooserGroup {
 				.addSelectionChangedListener(new ISelectionChangedListener() {
 
 					public void selectionChanged(SelectionChangedEvent event) {
-						machineChooser.setInput(projectChooser
+						matchingChooser.setInput(projectChooser
 								.getElement());
 						selectionChanged.performAction();
 					}
@@ -98,15 +99,14 @@ public class MachineChooserGroup {
 		
 		// Machine label
 		label = new Label(group, SWT.NONE);
-		label.setText("Machine");
+		label.setText("Matching");
 
 		// Problem machine chooser
-		machineChooser = new ElementChooserViewer<IMachineRoot>(
-			group,
-				IMachineRoot.ELEMENT_TYPE);
-		machineChooser.getControl().setLayoutData(
+		matchingChooser = new ElementChooserViewer<IPatternRoot>(
+			group, IPatternRoot.ELEMENT_TYPE);
+		matchingChooser.getControl().setLayoutData(
 				new GridData(GridData.FILL_HORIZONTAL));
-		machineChooser.addSelectionChangedListener(new ISelectionChangedListener() {
+		matchingChooser.addSelectionChangedListener(new ISelectionChangedListener() {
 
 			public void selectionChanged(SelectionChangedEvent event) {
 					selectionChanged.performAction();
@@ -130,8 +130,8 @@ public class MachineChooserGroup {
 	 * 
 	 * @return the machine chooser viewer.
 	 */
-	public ElementChooserViewer<IMachineRoot> getMachineChooser() {
-		return machineChooser;
+	public ElementChooserViewer<IPatternRoot> getMatchingChooser() {
+		return matchingChooser;
 	}
 
 	/**

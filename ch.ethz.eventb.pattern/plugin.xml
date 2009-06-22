@@ -13,5 +13,88 @@
             name="Event-B Pattern">
       </wizard>
    </extension>
+   <extension
+         point="org.eclipse.core.runtime.contentTypes">
+      <content-type
+            base-type="org.rodinp.core.rodin"
+            file-extensions="pat"
+            id="patternFile"
+            name="Event-B Pattern Root"
+            priority="normal">
+      </content-type>
+   </extension>
+   <extension
+         point="org.rodinp.core.fileAssociations">
+      <fileAssociation
+            content-type-id="ch.ethz.eventb.pattern.patternFile"
+            root-element-type="ch.ethz.eventb.pattern.patternFile">
+      </fileAssociation>
+   </extension>
+   <extension
+         point="org.rodinp.core.internalElementTypes">
+      <internalElementType
+            class="ch.ethz.eventb.pattern.core.basis.PatternRoot"
+            id="patternFile"
+            name="Event-B Pattern Root">
+      </internalElementType>
+      <internalElementType
+            class="ch.ethz.eventb.pattern.core.basis.VariableMatching"
+            id="variableMatching"
+            name="Pattern Variable Matching">
+      </internalElementType>
+      <internalElementType
+            class="ch.ethz.eventb.pattern.core.basis.EventMatching"
+            id="eventMatching"
+            name="Pattern Event Matching">
+      </internalElementType>
+      <internalElementType
+            class="ch.ethz.eventb.pattern.core.basis.CarrierSetMatching"
+            id="carrierSetMatching"
+            name="Pattern CarrierSet Matching">
+      </internalElementType>
+      <internalElementType
+            class="ch.ethz.eventb.pattern.core.basis.ConstantMatching"
+            id="constantMatching"
+            name="Pattern Constant Matching">
+      </internalElementType>
+      <internalElementType
+            class="ch.ethz.eventb.pattern.core.basis.ParameterMatching"
+            id="parameterMatching"
+            name="Pattern Parameter Matching">
+      </internalElementType>
+      <internalElementType
+            class="ch.ethz.eventb.pattern.core.basis.GuardMatching"
+            id="guardMatching"
+            name="Pattern Guard Matching">
+      </internalElementType>
+      <internalElementType
+            class="ch.ethz.eventb.pattern.core.basis.ActionMatching"
+            id="actionMatching"
+            name="Pattern Action Matching">
+      </internalElementType>
+   </extension>
+   <extension
+         point="org.rodinp.core.attributeTypes">
+      <attributeType
+            id="patternElement"
+            kind="string"
+            name="Pattern Element">
+      </attributeType>
+      <attributeType
+            id="problemElement"
+            kind="string"
+            name="Problem Element">
+      </attributeType>
+      <attributeType
+            id="patternProject"
+            kind="string"
+            name="Pattern Project">
+      </attributeType>
+      <attributeType
+            id="problemProject"
+            kind="string"
+            name="Problem Project">
+      </attributeType>
+   </extension>
 
 </plugin>
