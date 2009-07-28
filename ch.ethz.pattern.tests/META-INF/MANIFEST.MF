@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Tests Plug-in
+Bundle-SymbolicName: ch.ethz.eventb.pattern.tests
+Bundle-Version: 1.0.0
+Require-Bundle: ch.ethz.eventb.pattern;bundle-version="0.8.0",
+ org.junit4;bundle-version="4.3.1"
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
