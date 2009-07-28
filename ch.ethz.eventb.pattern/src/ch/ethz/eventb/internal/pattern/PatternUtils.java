@@ -35,6 +35,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eventb.core.IAction;
+import org.eventb.core.IAssignmentElement;
 import org.eventb.core.IContextRoot;
 import org.eventb.core.IEvent;
 import org.eventb.core.IEventBRoot;
@@ -43,6 +44,7 @@ import org.eventb.core.IIdentifierElement;
 import org.eventb.core.IInvariant;
 import org.eventb.core.ILabeledElement;
 import org.eventb.core.IMachineRoot;
+import org.eventb.core.IPredicateElement;
 import org.eventb.core.IRefinesEvent;
 import org.eventb.core.IVariable;
 import org.eventb.core.ast.Assignment;
@@ -152,12 +154,12 @@ public class PatternUtils {
 		return null;
 	}
 
-	public static <T extends IInternalElement> T getElementByElementName(IInternalElementType<T> childType, String elementName, IInternalElement parent) throws RodinDBException {
-		for (T element : parent.getChildrenOfType(childType))
-			if (element.getElementName().equals(elementName))
-				return element;
-		return null;
-	}
+//	public static <T extends IInternalElement> T getElementByElementName(IInternalElementType<T> childType, String elementName, IInternalElement parent) throws RodinDBException {
+//		for (T element : parent.getChildrenOfType(childType))
+//			if (element.getElementName().equals(elementName))
+//				return element;
+//		return null;
+//	}
 	
 	public static <T extends IInternalElement> T getElementByIdentifier(IInternalElementType<T> childType, String elementName, IInternalElement parent) throws RodinDBException {
 		for (T element : parent.getChildrenOfType(childType))
@@ -400,36 +402,24 @@ public class PatternUtils {
 
 	public static String getDisplayText(Object element) {
 
-		// If the element is a Guard element then return the predicate of the
-		// element.
-		if (element instanceof IGuard) {
+		// If the element has a predicate then return the predicate.
+		if (element instanceof IPredicateElement) {
 			try {
-				return ((IGuard) element).getPredicateString();
+				return ((IPredicateElement) element).getPredicateString();
 			} catch (RodinDBException e) {
 				return "";
 			}
 		}
 		
-		// If the element is an Action element then return the assignment of the
-		// element.
-		if (element instanceof IAction) {
+		// If the element has an assignment then return the assignment.
+		if (element instanceof IAssignmentElement) {
 			try {
-				return ((IAction) element).getAssignmentString();
+				return ((IAssignmentElement) element).getAssignmentString();
 			} catch (RodinDBException e) {
 				return "";
 			}
 		}
 		
-		// If the element is an Invariant element then return the predicate of the
-		// element.
-		if (element instanceof IInvariant) {
-			try {
-				return ((IInvariant) element).getPredicateString();
-			} catch (RodinDBException e) {
-				return "";
-			}
-		}
-
 		// If the element has label then return the label.
 		if (element instanceof ILabeledElement) {
 			try {
@@ -488,24 +478,6 @@ public class PatternUtils {
 		return label;
 	}
 	
-	public static <T extends IIdentifierElement> String renameIdentifier(T element, Matching<T>[] matchings, boolean fromPatterntoProblem) throws RodinDBException {
-		if (fromPatterntoProblem) {
-			for (Matching<T> matching : matchings)
-				if (matching.getPatternElement() == element)
-					return matching.getProblemElement().getIdentifierString();
-		}
-		else {
-			for (Matching<T> matching : matchings)
-				if (matching.getProblemElement() == element)
-					return matching.getPatternElement().getIdentifierString();
-		}
-		return element.getIdentifierString();
-	}
-
-	
-	
-
-	
 	public static String substitute(String string, String oldName, String newName, FormulaFactory ff) throws RodinDBException{
 		Map<FreeIdentifier, Expression> map = new HashMap<FreeIdentifier, Expression>();
 		map.put(ff.makeFreeIdentifier(oldName, null), ff.makeFreeIdentifier(newName, null));
@@ -563,37 +535,37 @@ public class PatternUtils {
 		return expression.toString();
 	}
 	
-	public static boolean backupFile(IMachineRoot machine, IProgressMonitor monitor) {
-		Assert.isNotNull(machine, "machine must not be null");
-		IFile file = machine.getRodinFile().getResource();
-		IProject project = file.getProject();
-		try {
-			IPath backupPath = new Path(file.getProjectRelativePath()+"_tmp");
-			IFile backup = project.getFile(backupPath);
-			if (backup.exists())
-				backup.delete(true, monitor);
-			file.copy(backupPath, true, monitor);
-		} catch (Exception e) {
-			return false;
-		}
-		return true;
-	}
-	
-	public static boolean restoreFile(IMachineRoot machine, IProgressMonitor monitor) {
-		Assert.isNotNull(machine, "machine must not be null");
-		IFile file = machine.getRodinFile().getResource();
-		IProject project = file.getProject();
-		try {
-			IPath backupPath = new Path(file.getProjectRelativePath()+"_tmp");
-			IFile backup = project.getFile(backupPath);
-			if (file.exists())
-				file.delete(true, monitor);
-			backup.copy(file.getProjectRelativePath(), true, monitor);
-		} catch (CoreException e) {
-			return false;
-		}
-		return true;
-	}
+//	public static boolean backupFile(IMachineRoot machine, IProgressMonitor monitor) {
+//		Assert.isNotNull(machine, "machine must not be null");
+//		IFile file = machine.getRodinFile().getResource();
+//		IProject project = file.getProject();
+//		try {
+//			IPath backupPath = new Path(file.getProjectRelativePath()+"_tmp");
+//			IFile backup = project.getFile(backupPath);
+//			if (backup.exists())
+//				backup.delete(true, monitor);
+//			file.copy(backupPath, true, monitor);
+//		} catch (Exception e) {
+//			return false;
+//		}
+//		return true;
+//	}
+//	
+//	public static boolean restoreFile(IMachineRoot machine, IProgressMonitor monitor) {
+//		Assert.isNotNull(machine, "machine must not be null");
+//		IFile file = machine.getRodinFile().getResource();
+//		IProject project = file.getProject();
+//		try {
+//			IPath backupPath = new Path(file.getProjectRelativePath()+"_tmp");
+//			IFile backup = project.getFile(backupPath);
+//			if (file.exists())
+//				file.delete(true, monitor);
+//			backup.copy(file.getProjectRelativePath(), true, monitor);
+//		} catch (CoreException e) {
+//			return false;
+//		}
+//		return true;
+//	}
 	
 	public static void unsetExtended(IEvent event) throws RodinDBException {
 		new UnsetExtended(event).run(null);

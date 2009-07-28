@@ -35,15 +35,15 @@ public class MatchingMachine extends ComplexMatching<IMachineRoot> implements
 	/**
 	 * The constructor. Create a complex matching {@link ComplexMatching} of
 	 * type machine root.
-	 * 
-	 * @param problem
-	 *            a problem machine root.
 	 * @param pattern
 	 *            a pattern machine root.
+	 * @param problem
+	 *            a problem machine root.
+	 * 
 	 * @throws RodinDBException 
 	 */
-	public MatchingMachine(IMachineRoot problem, IMachineRoot pattern) throws RodinDBException {
-		super(problem, pattern, IMachineRoot.ELEMENT_TYPE, null);
+	public MatchingMachine(IMachineRoot pattern, IMachineRoot problem) throws RodinDBException {
+		super(pattern, problem, IMachineRoot.ELEMENT_TYPE, null);
 		problemProject = problem.getRodinProject();
 		patternProject = pattern.getRodinProject();
 	}

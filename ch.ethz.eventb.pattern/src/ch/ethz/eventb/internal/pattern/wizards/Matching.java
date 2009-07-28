@@ -10,6 +10,7 @@
  *******************************************************************************/
 package ch.ethz.eventb.internal.pattern.wizards;
 
+import org.eclipse.jface.util.Assert;
 import org.eventb.core.IEventBRoot;
 import org.eventb.core.IIdentifierElement;
 import org.eventb.core.ILabeledElement;
@@ -48,16 +49,16 @@ public class Matching<T extends IInternalElement> implements IMatching<T> {
 	
 	/**
 	 * The constructor. The input elements must have the correct type.
-	 * 
-	 * @param problem
-	 *            a problem element
 	 * @param pattern
 	 *            a pattern element
+	 * @param problem
+	 *            a problem element
 	 * @param type
 	 *            the type of the input elements.
+	 * 
 	 * @throws RodinDBException 
 	 */
-	public Matching(IInternalElement problem, IInternalElement pattern, IInternalElementType<T> type, IComplexMatching<? extends IRodinElement> parents) throws RodinDBException {
+	public Matching(IInternalElement pattern, IInternalElement problem, IInternalElementType<T> type, IComplexMatching<? extends IRodinElement> parents) throws RodinDBException {
 //		Assert.isLegal(problem.getElementType() == type,
 //				"Incorrect elemet type");
 //		Assert.isLegal(pattern.getElementType() == type,
@@ -86,7 +87,7 @@ public class Matching<T extends IInternalElement> implements IMatching<T> {
 		this.parents = parents;
 	}
 
-	public Matching(String problem, String pattern, IInternalElementType<T> type, IComplexMatching<? extends IRodinElement> parents, boolean hasLabel) throws RodinDBException {
+	public Matching(String pattern, String problem, IInternalElementType<T> type, IComplexMatching<? extends IRodinElement> parents, boolean hasLabel) throws RodinDBException {
 		this.problem = problem;
 		this.pattern = pattern;
 		this.hasLabel = hasLabel;
