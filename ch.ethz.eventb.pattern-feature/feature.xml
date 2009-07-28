@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="ch.ethz.eventb.pattern_feature"
+      label="%featureName"
+      version="1.0.1"
+      provider-name="%providerName">
+
+   <description>
+      %description
+   </description>
+
+   <copyright>
+      %copyright
+   </copyright>
+
+   <license url="%licenseURL">
+      %license
+   </license>
+
+   <url>
+      <update label="Pattern" url="http://www.n.ethz.ch/~fuersta/download/pattern/"/>
+   </url>
+
+   <plugin
+         id="ch.ethz.eventb.pattern"
+         download-size="0"
+         install-size="0"
+         version="0.8.0.1"
+         unpack="false"/>
+
+</feature>
