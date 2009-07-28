@@ -37,22 +37,22 @@ public class ComplexMatching<T extends IInternalElement> extends Matching<T>
 
 	/**
 	 * The constructor. The collection of sub-matchings is initialised.
-	 * 
-	 * @param problem
-	 *            the problem element.
 	 * @param pattern
 	 *            the pattern element.
+	 * @param problem
+	 *            the problem element.
 	 * @param type
 	 *            the type of the matching.
+	 * 
 	 * @throws RodinDBException 
 	 */
-	public ComplexMatching(IInternalElement problem, IInternalElement pattern, IInternalElementType<T> type, IComplexMatching<? extends IRodinElement> parents) throws RodinDBException {
-		super(problem, pattern, type, parents);
+	public ComplexMatching(IInternalElement pattern, IInternalElement problem, IInternalElementType<T> type, IComplexMatching<? extends IRodinElement> parents) throws RodinDBException {
+		super(pattern, problem, type, parents);
 		matchings = new ArrayList<Matching<?>>();
 	}
 	
-	public ComplexMatching(String problem, String pattern, IInternalElementType<T> type, IComplexMatching<? extends IRodinElement> parents, boolean hasLabel) throws RodinDBException {
-		super(problem, pattern, type, parents, hasLabel);
+	public ComplexMatching(String pattern, String problem, IInternalElementType<T> type, IComplexMatching<? extends IRodinElement> parents, boolean hasLabel) throws RodinDBException {
+		super(pattern, problem, type, parents, hasLabel);
 		matchings = new ArrayList<Matching<?>>();
 	}
 
@@ -130,21 +130,21 @@ public class ComplexMatching<T extends IInternalElement> extends Matching<T>
 	 */
 	public <S extends IInternalElement> void addMatching(S patternElement, S problemElement, IInternalElementType<S> type) {
 		try {
-			matchings.add(new Matching<S>(problemElement, patternElement, type,this));
+			matchings.add(new Matching<S>(patternElement, problemElement, type,this));
 		} catch (RodinDBException e) {
 		}
 	}
 	
 	public <S extends IInternalElement> void addMatching(String patternElement, String problemElement, IInternalElementType<S> type, boolean hasLabel) {
 		try {
-			matchings.add(new Matching<S>(problemElement, patternElement, type, this, hasLabel));
+			matchings.add(new Matching<S>(patternElement, problemElement, type, this, hasLabel));
 		} catch (RodinDBException e) {
 		}
 	}
 	
 	public <S extends IInternalElement> void addComplexMatching(S patternElement, S problemElement, IInternalElementType<S> type) {
 		try {
-			matchings.add(new ComplexMatching<S>(problemElement, patternElement, type,this));
+			matchings.add(new ComplexMatching<S>(patternElement, problemElement, type,this));
 		} catch (RodinDBException e) {
 		}
 	}
@@ -152,7 +152,7 @@ public class ComplexMatching<T extends IInternalElement> extends Matching<T>
 	public <S extends IInternalElement> ComplexMatching<S> addComplexMatching(String patternElement, String problemElement, IInternalElementType<S> type, boolean hasLabel) {
 		ComplexMatching<S> cplx = null;
 		try {
-			cplx = new ComplexMatching<S>(problemElement, patternElement, type, this, hasLabel);
+			cplx = new ComplexMatching<S>(patternElement, problemElement, type, this, hasLabel);
 			matchings.add(cplx);
 		} catch (RodinDBException e) {
 		}

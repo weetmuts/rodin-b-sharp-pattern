@@ -103,7 +103,7 @@ public class LoadDialog extends Dialog {
 			IRodinProject patternProject = RodinCore.getRodinDB().getRodinProject(root.getPatternProject());
 			IMachineRoot problemMachine = (IMachineRoot)problemProject.getRodinFile(root.getProblemMachine()+".bum").getRoot();
 			IMachineRoot patternMachine = (IMachineRoot)patternProject.getRodinFile(root.getPatternMachine()+".bum").getRoot();
-			newMatching = new MatchingMachine(problemMachine, patternMachine);
+			newMatching = new MatchingMachine(patternMachine, problemMachine);
 		
 			for (IVariableMatching varMatch : root.getVariableMatchings())
 				newMatching.addMatching(varMatch.getPatternVariable(), varMatch.getProblemVariable(), IVariable.ELEMENT_TYPE, false);

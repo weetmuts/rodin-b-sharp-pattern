@@ -720,7 +720,7 @@ public class MatchingWizardPage extends WizardPage {
 		
 		if (problemMachine != null && patternMachine != null) {
 			try {
-				matching = new MatchingMachine(problemMachine, patternMachine);
+				matching = new MatchingMachine(patternMachine, problemMachine);
 				matching.addComplexMatching(PatternUtils.getElementByLabel(IEvent.ELEMENT_TYPE, IEvent.INITIALISATION, problemMachine),
 						PatternUtils.getElementByLabel(IEvent.ELEMENT_TYPE, IEvent.INITIALISATION, patternMachine),
 						IEvent.ELEMENT_TYPE);
