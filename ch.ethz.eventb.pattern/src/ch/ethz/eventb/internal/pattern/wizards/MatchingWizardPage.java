@@ -57,13 +57,13 @@ import org.eventb.core.ast.Assignment;
 import org.eventb.core.ast.FormulaFactory;
 import org.eventb.core.ast.FreeIdentifier;
 import org.eventb.core.ast.LanguageVersion;
-import org.eventb.eventBKeyboard.Text2EventBMathTranslator;
 import org.rodinp.core.IInternalElement;
 import org.rodinp.core.IRodinDB;
 import org.rodinp.core.IRodinFile;
 import org.rodinp.core.IRodinProject;
 import org.rodinp.core.RodinCore;
 import org.rodinp.core.RodinDBException;
+import org.rodinp.keyboard.RodinKeyboardPlugin;
 
 import ch.ethz.eventb.internal.pattern.ActionPerformer;
 import ch.ethz.eventb.internal.pattern.MyComboBoxCellEditor;
@@ -373,7 +373,7 @@ public class MatchingWizardPage extends WizardPage {
 		    			constantRenaming.addPair((IConstant)element, PatternUtils.getDisplayText(comboContent.get((Integer)value)));
 		    	}
 		    	else if (!combo.getText().equals("")) {
-					String translateStr = Text2EventBMathTranslator.translate(combo.getText());
+					String translateStr = RodinKeyboardPlugin.getDefault().translate(combo.getText());
 					if (!combo.getText().equals(translateStr))
 						combo.setText(translateStr);
 		    		if (element instanceof ICarrierSet)
