@@ -12,6 +12,7 @@ package ch.ethz.eventb.internal.pattern.wizards;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.viewers.DoubleClickEvent;
@@ -44,6 +45,7 @@ import org.eventb.ui.IEventBSharedImages;
 import org.rodinp.core.IInternalElementType;
 
 import ch.ethz.eventb.internal.pattern.ActionPerformer;
+import ch.ethz.eventb.internal.pattern.Data;
 
 
 /**
@@ -87,6 +89,8 @@ public class ExtendedMatchingGroup {
 	IInternalElementType<IEvent> type;
 
 	private SubmatchingDialog dialog;
+	
+	private Data data;
 	
 	private ActionPerformer matchingChanged = new ActionPerformer();
 
@@ -215,13 +219,14 @@ public class ExtendedMatchingGroup {
 	 * @param type
 	 *            the element type of the matchings
 	 */
-	public ExtendedMatchingGroup(Composite container, int style, IInternalElementType<IEvent> type) {
+	public ExtendedMatchingGroup(Composite container, int style, IInternalElementType<IEvent> type, Data data) {
 		group = new Group(container, style);
 		GridLayout gl = new GridLayout();
 		gl.numColumns = 3;
 		gl.verticalSpacing = 9;
 		group.setLayout(gl);
 		this.type = type;
+		this.data = data;
 		createContents();
 	}
 
@@ -353,6 +358,12 @@ public class ExtendedMatchingGroup {
 		if (sel.length == 1){
 			ComplexMatching<IEvent> item = (ComplexMatching<IEvent>)sel[0].getData();
 			root.removeMatching(item);
+			try {
+				data.removeMatching(item.getPatternElement(), item.getProblemElement());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		viewer.setInput(root);
 		matchingChanged.performAction();
@@ -367,6 +378,12 @@ public class ExtendedMatchingGroup {
 		Assert.isNotNull(problemElement, "Problem element should not be null");
 		Assert.isNotNull(patternElement, "Problem element should not be null");
 		root.addComplexMatching(patternElement, problemElement, IEvent.ELEMENT_TYPE);
+		try {
+			data.addMatching(patternElement, problemElement);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		viewer.setInput(root);
 		matchingChanged.performAction();
 	}
@@ -376,7 +393,7 @@ public class ExtendedMatchingGroup {
 	 */
 	protected void addSubMatching(ISelection selection, ComplexMatching<IEvent> matching ) {
 		
-		dialog = new SubmatchingDialog(group.getShell(), "Sub-matching", matching);
+		dialog = new SubmatchingDialog(group.getShell(), "Sub-matching", matching, data);
 		dialog.open();
 		viewer.setInput(root);
 		matchingChanged.performAction();		
@@ -425,6 +442,7 @@ public class ExtendedMatchingGroup {
 	 */
 	public void setInput(IComplexMatching<?> matching) {
 		viewer.setInput(matching);
+		matchingChanged.performAction();
 	}
 
 	public ActionPerformer getActionPerformer(){

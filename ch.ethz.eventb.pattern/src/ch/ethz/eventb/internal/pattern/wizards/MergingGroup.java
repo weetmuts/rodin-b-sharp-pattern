@@ -28,10 +28,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.TableItem;
-import org.eventb.core.IAction;
-import org.eventb.core.IGuard;
-import org.eventb.core.IParameter;
-import org.eventb.core.IVariable;
+import org.eventb.core.IEvent;
 import org.rodinp.core.IInternalElement;
 import org.rodinp.core.IInternalElementType;
 import org.rodinp.core.RodinDBException;
@@ -55,16 +52,16 @@ import ch.ethz.eventb.internal.pattern.Data;
  * @param <T>
  *            the type of the matching elements.
  */
-public class MatchingGroup<T extends IInternalElement> {
+public class MergingGroup {
 
 	// The main group widget
 	private Group group;
 
 	// The problem element chooser.
-	private ElementChooserViewer<T> problemChooser;
+	private ElementChooserViewer<IEvent> problemChooser;
 
 	// The pattern element chooser.
-	private ElementChooserViewer<T> patternChooser;
+	private ElementChooserViewer<IEvent> patternChooser;
 
 	// The table viewer.
 	TableViewer viewer;
@@ -76,9 +73,9 @@ public class MatchingGroup<T extends IInternalElement> {
 	private IComplexMatching<?> root;
 
 	// The element type of matchings.
-	IInternalElementType<T> type;
+	IInternalElementType<IEvent> type;
 	
-	Data data;
+	private Data data;
 	
 	private ActionPerformer matchingChanged = new ActionPerformer();
 
@@ -223,7 +220,7 @@ public class MatchingGroup<T extends IInternalElement> {
 	 * @param type
 	 *            the element type of the matchings
 	 */
-	public MatchingGroup(Composite container, int style, IInternalElementType<T> type, Data data) {
+	public MergingGroup(Composite container, int style, IInternalElementType<IEvent> type, Data data) {
 		group = new Group(container, style);
 		GridLayout gl = new GridLayout();
 		gl.numColumns = 3;
@@ -233,7 +230,6 @@ public class MatchingGroup<T extends IInternalElement> {
 		this.data = data;
 		createContents();
 	}
-	
 
 	/**
 	 * Utility method for creating the actual contents of the group widget. This
@@ -249,7 +245,7 @@ public class MatchingGroup<T extends IInternalElement> {
 		};
 		
 		// Pattern element chooser
-		patternChooser = new ElementChooserViewer<T>(group, type);
+		patternChooser = new ElementChooserViewer<IEvent>(group, type);
 		patternChooser.getControl().setLayoutData(
 				new GridData(GridData.FILL_HORIZONTAL));
 		patternChooser.addSelectionChangedListener(listener);
@@ -274,7 +270,7 @@ public class MatchingGroup<T extends IInternalElement> {
 		addButton.setEnabled(false);
 
 		// Problem element chooser
-		problemChooser = new ElementChooserViewer<T>(group, type);
+		problemChooser = new ElementChooserViewer<IEvent>(group, type);
 		problemChooser.getControl().setLayoutData(
 				new GridData(GridData.FILL_HORIZONTAL));
 		problemChooser.addSelectionChangedListener(listener);
@@ -316,8 +312,8 @@ public class MatchingGroup<T extends IInternalElement> {
 	 * Utility method to update the status of the add button. 
 	 */
 	protected void updateAddButton() {
-		T problemElement = this.getProblemChooser().getElement();
-		T patternElement = this.getPatternChooser().getElement();
+		IEvent problemElement = this.getProblemChooser().getElement();
+		IEvent patternElement = this.getPatternChooser().getElement();
 		addButton.setEnabled(problemElement != null && patternElement != null);
 	}
 
@@ -328,17 +324,10 @@ public class MatchingGroup<T extends IInternalElement> {
 	protected void removeMatching() {
 		TableItem[] table = viewer.getTable().getSelection();
 		if (table.length == 1){
-			Matching<T> item = (Matching<T>)table[0].getData();
+			Matching<IEvent> item = (Matching<IEvent>)table[0].getData();
 			root.removeMatching(item);
 			try {
-				if (type == IVariable.ELEMENT_TYPE)
-					data.removeMatching((IVariable)item.getPatternElement(), (IVariable)item.getProblemElement());
-				else if (type == IParameter.ELEMENT_TYPE)
-					data.removeMatching((IParameter)item.getPatternElement(), (IParameter)item.getProblemElement());
-				else if (type == IGuard.ELEMENT_TYPE)
-					data.removeMatching((IGuard)item.getPatternElement(), (IGuard)item.getProblemElement());
-				else if (type == IAction.ELEMENT_TYPE)
-					data.removeMatching((IAction)item.getPatternElement(), (IAction)item.getProblemElement());
+				data.removeMerging(item.getPatternElement(), item.getProblemElement());
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -353,20 +342,13 @@ public class MatchingGroup<T extends IInternalElement> {
 	 * @throws RodinDBException 
 	 */
 	protected void addMatching() throws RodinDBException {
-		T problemElement = this.getProblemChooser().getElement();
-		T patternElement = this.getPatternChooser().getElement();
+		IEvent problemElement = this.getProblemChooser().getElement();
+		IEvent patternElement = this.getPatternChooser().getElement();
 		Assert.isNotNull(problemElement, "Problem element should not be null");
-		Assert.isNotNull(patternElement, "Pattern element should not be null");
+		Assert.isNotNull(patternElement, "Problem element should not be null");
 		root.addMatching(patternElement, problemElement, type);
 		try {
-			if (type == IVariable.ELEMENT_TYPE)
-				data.addMatching((IVariable)patternElement, (IVariable)problemElement);
-			else if (type == IParameter.ELEMENT_TYPE)
-				data.addMatching((IParameter)patternElement, (IParameter)problemElement);
-			else if (type == IGuard.ELEMENT_TYPE)
-				data.addMatching((IGuard)patternElement, (IGuard)problemElement);
-			else if (type == IAction.ELEMENT_TYPE)
-				data.addMatching((IAction)patternElement, (IAction)problemElement);
+			data.addMerging(patternElement, problemElement);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -391,7 +373,7 @@ public class MatchingGroup<T extends IInternalElement> {
 	 * 
 	 * @return the problem element chooser.
 	 */
-	public ElementChooserViewer<T> getProblemChooser() {
+	public ElementChooserViewer<IEvent> getProblemChooser() {
 		return problemChooser;
 	}
 
@@ -400,7 +382,7 @@ public class MatchingGroup<T extends IInternalElement> {
 	 * 
 	 * @return the pattern element chooser.
 	 */
-	public ElementChooserViewer<T> getPatternChooser() {
+	public ElementChooserViewer<IEvent> getPatternChooser() {
 		return patternChooser;
 	}
 	
@@ -416,7 +398,6 @@ public class MatchingGroup<T extends IInternalElement> {
 	 */
 	public void setInput(IComplexMatching<?> matching) {
 		viewer.setInput(matching);
-		matchingChanged.performAction();
 	
 	}
 	
@@ -424,7 +405,7 @@ public class MatchingGroup<T extends IInternalElement> {
 		return matchingChanged;
 	}
 	
-	public Matching<T>[] getMatchings(){
+	public Matching<IEvent>[] getMatchings(){
 		if (root != null)
 			return root.getChildrenOfType(type);
 		else return new Matching[0];
