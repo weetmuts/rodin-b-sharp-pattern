@@ -20,6 +20,8 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
@@ -34,11 +36,17 @@ import org.eclipse.swt.widgets.Text;
 import org.eventb.core.IEvent;
 import org.eventb.core.IEventBProject;
 import org.eventb.core.IMachineRoot;
+import org.eventb.core.IParameter;
 import org.eventb.core.IVariable;
 import org.eventb.core.IWitness;
 import org.rodinp.core.IRodinFile;
+import org.rodinp.core.RodinCore;
 import org.rodinp.core.RodinDBException;
+import org.rodinp.internal.core.RodinDB;
+import org.rodinp.keyboard.RodinKeyboardPlugin;
 
+import ch.ethz.eventb.internal.pattern.Data;
+import ch.ethz.eventb.internal.pattern.DataException;
 import ch.ethz.eventb.internal.pattern.PatternUtils;
 
 
@@ -54,7 +62,7 @@ public class IncorporatingWizardPage extends WizardPage {
 
 	private MatchingWizardPage matchingPage;
 	
-	private RenamingWizardPage renamingPage;
+	private MergingWizardPage mergingPage;
 	
 	private Matching<IVariable>[] variableMatching;
 
@@ -82,6 +90,9 @@ public class IncorporatingWizardPage extends WizardPage {
 	
 	private boolean doGeneratePO;
 
+	private Data data;
+	
+	private RodinKeyboardPlugin keyboard = RodinKeyboardPlugin.getDefault();
 	
 	
 	/**
@@ -102,22 +113,31 @@ public class IncorporatingWizardPage extends WizardPage {
 		public Object[] getElements(Object inputElement) {
 			
 			varGroup = (MatchingGroup<IVariable>)inputElement;
-			IVariable[] refinementVariables = new IVariable[0];
-			if (renamingPage.getPatternRefinmentMachine() != null) {
-				try {
-					refinementVariables = renamingPage.getPatternRefinmentMachine().getVariables();
-				} catch (RodinDBException e) {
-				}
+//			IVariable[] refinementVariables = new IVariable[0];
+//			if (mergingPage.getPatternRefinmentMachine() != null) {
+//				try {
+//					refinementVariables = mergingPage.getPatternRefinmentMachine().getVariables();
+//				} catch (RodinDBException e) {
+//				}
+//			}
+//			Collection<IVariable> result = new ArrayList<IVariable>();
+//			if (varGroup != null) {
+//				for (Matching<IVariable> matching : varGroup.getMatchings()) 
+//					if (!PatternUtils.isInArray(matching.getPatternID(), refinementVariables))
+//						result.add(matching.getPatternElement());
+//			}
+//			disappeard = result;
+//			return result.toArray();
+			try {
+				disappeard = data.getDisappearingPatternVariables();
+				disappeard.addAll(data.getDisappearingVariablesOfAllIntermediateMachines());
+				return disappeard.toArray();
 			}
-			Collection<IVariable> result = new ArrayList<IVariable>();
-			if (varGroup != null) {
-				for (Matching<IVariable> matching : varGroup.getMatchings()) 
-					if (!PatternUtils.isInArray(matching.getPatternID(), refinementVariables))
-						result.add(matching.getPatternElement());
+			catch (DataException e) {
+				return new Object[0];
 			}
-			disappeard = result;
-			return result.toArray();
-			}
+			
+		}
 	
 
 		/*
@@ -159,20 +179,25 @@ public class IncorporatingWizardPage extends WizardPage {
 		 */
 		public Object[] getElements(Object inputElement) {
 			
-			Assert.isTrue(inputElement instanceof IMachineRoot);
-			Collection<IWitness> result = new ArrayList<IWitness>();
-			for (ComplexMatching<IEvent> match : matchingPage.getEventGroup().getMatchings()) {
-				try {
-					for (IEvent refEvent : PatternUtils.getRefinementEvents(match.getPatternElement(), (IMachineRoot)inputElement)) {
-						for (IWitness witness : refEvent.getWitnesses())
-							if (!result.contains(witness))
-								result.add(witness);
-					}
-				} catch (RodinDBException e) {}
+//			Assert.isTrue(inputElement instanceof IMachineRoot);
+//			Collection<IWitness> result = new ArrayList<IWitness>();
+//			for (ComplexMatching<IEvent> match : matchingPage.getEventGroup().getMatchings()) {
+//				try {
+//					for (IEvent refEvent : PatternUtils.getRefinementChainOfEvent((IMachineRoot)inputElement, match.getPatternElement())) {
+//						for (IWitness witness : refEvent.getWitnesses())
+//							if (!result.contains(witness))
+//								result.add(witness);
+//					}
+//				} catch (RodinDBException e) {}
+//			}
+//			
+			try {
+				allWitnesses = data.getRelevantWitnesses();
+				return allWitnesses.toArray();
 			}
-			
-			allWitnesses = result;
-			return result.toArray();
+			catch (DataException e) {
+				return new Object[0];
+			}
 		}
 		
 	
@@ -252,13 +277,14 @@ public class IncorporatingWizardPage extends WizardPage {
 	 * 
 	 * @param pageName
 	 */
-	public IncorporatingWizardPage(MatchingWizardPage matchingPage, RenamingWizardPage renamingPage) {
+	public IncorporatingWizardPage(MatchingWizardPage matchingPage, MergingWizardPage mergingPage, Data data) {
 		super("wizardPage");
-		setTitle("Event-B Pattern. Step 4");
+		setTitle("Event-B Pattern. Step 5");
 		setDescription("This step incorporate the pattern and the problem.");
 		this.matchingPage = matchingPage;
-		this.renamingPage = renamingPage;
+		this.mergingPage = mergingPage;
 		varGroup = matchingPage.getVariableGroup();
+		this.data = data;
 	}
 
 	private String renameMatching(String predicate){
@@ -315,12 +341,12 @@ public class IncorporatingWizardPage extends WizardPage {
 		
 		
 				
-		renamingPage.getRefinementChooser().addSelectionChangedListener(new ISelectionChangedListener() {
+		mergingPage.getRefinementChooser().addSelectionChangedListener(new ISelectionChangedListener() {
 
 			public void selectionChanged(SelectionChangedEvent event) {
-				invariants.setInput(renamingPage.getPatternRefinmentMachine());
+				invariants.setInput(mergingPage.getPatternRefinmentMachine());
 				variables.setInput(matchingPage.getVariableGroup());
-				witnesses.setInput(renamingPage.getPatternRefinmentMachine());
+				witnesses.setInput(mergingPage.getPatternRefinmentMachine());
 				variableExtraction = new Renaming<IVariable>();
 				witnessExtraction = new Renaming<IWitness>();
 				updateStatus(null);
@@ -380,7 +406,7 @@ public class IncorporatingWizardPage extends WizardPage {
 		});
 
 		
-		TableViewerColumn originalVariables = new TableViewerColumn(variables,SWT.NONE);
+		final TableViewerColumn originalVariables = new TableViewerColumn(variables,SWT.NONE);
 		originalVariables.getColumn().setWidth(100);
 		originalVariables.setLabelProvider(new CellLabelProvider(){
 		    @Override
@@ -391,7 +417,7 @@ public class IncorporatingWizardPage extends WizardPage {
 
 		});
 		
-		TableViewerColumn extractedVars = new TableViewerColumn(variables,SWT.NONE);
+		final TableViewerColumn extractedVars = new TableViewerColumn(variables,SWT.NONE);
 		extractedVars.getColumn().setWidth(100);
 		extractedVars.setLabelProvider(new CellLabelProvider(){
 		    @Override
@@ -421,13 +447,31 @@ public class IncorporatingWizardPage extends WizardPage {
 
 		    @Override
 		    protected void setValue(Object element, Object value) {
+		    	String translateStr = keyboard.translate(value.toString());
+				if (!value.toString().equals(translateStr))
+					value = translateStr;
 		    	if (value.equals(""))
 		    		variableExtraction.removePair((IVariable)element);
-		    	else
+		    	else 
 		    		variableExtraction.addPair((IVariable)element, value.toString());
+		    	try {
+					data.updateReplacementOf((IVariable)element, value.toString());
+				} catch (Exception e) {}
 		    	variables.setInput(matchingPage.getVariableGroup());
 		    }
 
+		});
+		
+		variableGroup.addControlListener(new ControlAdapter() {
+
+			@Override
+			public void controlResized(ControlEvent e) {
+				int width = variables.getTable().getSize().x;
+				originalVariables.getColumn().setWidth(width/2);
+				extractedVars.getColumn().setWidth(width/2);
+				super.controlResized(e);
+			}
+			
 		});
 		
 		
@@ -449,7 +493,7 @@ public class IncorporatingWizardPage extends WizardPage {
 		matchingPage.getActionPerformer().addListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent e) {
-				witnesses.setInput(renamingPage.getPatternRefinmentMachine());
+				witnesses.setInput(mergingPage.getPatternRefinmentMachine());
 				witnessExtraction = new Renaming<IWitness>();
 				updateStatus(null);
 				return;
@@ -459,19 +503,20 @@ public class IncorporatingWizardPage extends WizardPage {
 		});
 
 		
-		TableViewerColumn events = new TableViewerColumn(witnesses,SWT.NONE);
+		final TableViewerColumn events = new TableViewerColumn(witnesses,SWT.NONE);
 		events.getColumn().setWidth(100);
 		events.setLabelProvider(new CellLabelProvider(){
 		    @Override
 		    public void update(ViewerCell cell) {
-		    	cell.setText(PatternUtils.getDisplayText(((IWitness)cell.getElement()).getParent()));
+		    	cell.setText(PatternUtils.getDisplayText(((IWitness)cell.getElement()).getParent().getParent()) + "." +
+		    			PatternUtils.getDisplayText(((IWitness)cell.getElement()).getParent()));
 		       
 		    }
 
 		});
 		
 		
-		TableViewerColumn originalWitness = new TableViewerColumn(witnesses,SWT.NONE);
+		final TableViewerColumn originalWitness = new TableViewerColumn(witnesses,SWT.NONE);
 		originalWitness.getColumn().setWidth(100);
 		originalWitness.setLabelProvider(new CellLabelProvider(){
 		    @Override
@@ -484,7 +529,7 @@ public class IncorporatingWizardPage extends WizardPage {
 
 		});
 		
-		TableViewerColumn witnessLabel = new TableViewerColumn(witnesses,SWT.NONE);
+		final TableViewerColumn witnessLabel = new TableViewerColumn(witnesses,SWT.NONE);
 		witnessLabel.getColumn().setWidth(100);
 		witnessLabel.setLabelProvider(new CellLabelProvider(){
 		    @Override
@@ -496,12 +541,17 @@ public class IncorporatingWizardPage extends WizardPage {
 
 		});
 		
-		TableViewerColumn extractedWitness = new TableViewerColumn(witnesses,SWT.NONE);
+		final TableViewerColumn extractedWitness = new TableViewerColumn(witnesses,SWT.NONE);
 		extractedWitness.getColumn().setWidth(200);
 		extractedWitness.setLabelProvider(new CellLabelProvider(){
 		    @Override
 		    public void update(ViewerCell cell) {
-		    	cell.setText(witnessExtraction.getRenamingOfElement((IWitness)cell.getElement()));
+		    	try {
+		    		cell.setText(data.getReplacementFor((IWitness)cell.getElement()).toString());
+				} catch (Exception e) {
+					cell.setText("error");
+				}
+		    	
 		    	updateStatus(null);
 			}
 
@@ -521,21 +571,46 @@ public class IncorporatingWizardPage extends WizardPage {
 
 		    @Override
 		    protected Object getValue(Object element) {
-		        return witnessExtraction.getRenamingOfElement((IWitness)element);
+		    	try {
+		    		return data.getReplacementFor((IWitness)element).toString();
+				} catch (Exception e) {
+					return "";
+				}
+		    	
+		        
+//		        witnessExtraction.getRenamingOfElement((IWitness)element);
 		    }
 
 		    @Override
 		    protected void setValue(Object element, Object value) {
+		    	String translateStr = keyboard.translate(value.toString());
+				if (!value.toString().equals(translateStr))
+					value = translateStr;
 		    	if (value.equals(""))
 		    		witnessExtraction.removePair((IWitness)element);
 		    	else
 		    		witnessExtraction.addPair((IWitness)element, value.toString());
-		    	witnesses.setInput(renamingPage.getPatternRefinmentMachine());
+		    	try {
+		    		data.updateReplacementOf((IWitness)element, value.toString());
+				} catch (Exception e) {}
+		    	witnesses.setInput(mergingPage.getPatternRefinmentMachine());
 		    }
 
 		});
 		
-		
+		witnessGroup.addControlListener(new ControlAdapter() {
+
+			@Override
+			public void controlResized(ControlEvent e) {
+				int width = witnesses.getTable().getSize().x;
+				events.getColumn().setWidth(width/4);
+				originalWitness.getColumn().setWidth(width/4);
+				witnessLabel.getColumn().setWidth(width/4);
+				extractedWitness.getColumn().setWidth(width/4);
+				super.controlResized(e);
+			}
+			
+		});
 		
 		Group group = new Group(container, SWT.DEFAULT);
 		gl = new GridLayout();

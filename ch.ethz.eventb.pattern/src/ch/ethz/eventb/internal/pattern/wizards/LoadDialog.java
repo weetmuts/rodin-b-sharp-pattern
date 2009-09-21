@@ -3,7 +3,11 @@ package ch.ethz.eventb.internal.pattern.wizards;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
@@ -23,6 +27,7 @@ import org.rodinp.core.IRodinProject;
 import org.rodinp.core.RodinCore;
 import org.rodinp.core.RodinDBException;
 
+import ch.ethz.eventb.pattern.EventBPattern;
 import ch.ethz.eventb.pattern.core.IActionMatching;
 import ch.ethz.eventb.pattern.core.ICarrierSetMatching;
 import ch.ethz.eventb.pattern.core.IConstantMatching;
@@ -126,7 +131,13 @@ public class LoadDialog extends Dialog {
 			return;
 		}
 			
-		matchingPage.loadMatchingMachine(newMatching, carrierSetRenaming, constantRenaming);
+		try {
+			matchingPage.loadMatchingMachine(newMatching, carrierSetRenaming, constantRenaming);
+		} catch (Exception e) {
+			IStatus status =
+				new Status(IStatus.ERROR, EventBPattern.PLUGIN_ID, IStatus.ERROR, e.getMessage(), null);
+			new ErrorDialog(this.getShell(), "Error", "Error while loading matching", status, IStatus.ERROR).open();
+		}
 		
 		
 		super.okPressed();

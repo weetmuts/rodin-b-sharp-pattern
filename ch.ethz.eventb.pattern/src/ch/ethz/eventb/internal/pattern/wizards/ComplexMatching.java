@@ -171,4 +171,8 @@ public class ComplexMatching<T extends IInternalElement> extends Matching<T>
 			matchings.remove(matching);
 	}
 	
+	public void clearMatching() {
+		matchings.clear();
+	}
+	
 }

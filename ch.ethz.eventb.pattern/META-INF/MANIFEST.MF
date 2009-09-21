@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: %pluginName
+Bundle-Name: Event-B Pattern Plug-in
 Bundle-SymbolicName: ch.ethz.eventb.pattern;singleton:=true
 Bundle-Version: 0.8.0.1
 Bundle-Activator: ch.ethz.eventb.internal.pattern.EventBPattern
@@ -10,4 +10,4 @@ Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Export-Package: ch.ethz.eventb.internal.pattern;x-friends:="ch.ethz.eventb.pattern.tests",
  ch.ethz.eventb.internal.pattern.wizards;x-friends:="ch.ethz.eventb.pattern.tests"
-Bundle-Vendor: %providerName
+Bundle-Vendor: ETH Zurich

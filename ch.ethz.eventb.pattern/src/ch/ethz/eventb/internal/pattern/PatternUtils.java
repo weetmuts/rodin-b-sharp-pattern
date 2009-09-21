@@ -16,8 +16,10 @@ import static org.eventb.internal.ui.EventBUtils.getImplicitChildren;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -46,6 +48,7 @@ import org.eventb.core.ILabeledElement;
 import org.eventb.core.IMachineRoot;
 import org.eventb.core.IPredicateElement;
 import org.eventb.core.IRefinesEvent;
+import org.eventb.core.IRefinesMachine;
 import org.eventb.core.IVariable;
 import org.eventb.core.ast.Assignment;
 import org.eventb.core.ast.BecomesEqualTo;
@@ -132,8 +135,12 @@ public class PatternUtils {
 		return RodinCore.getRodinDB().getRodinProject(name);
 	}
 
-	public static IEvent[] getRefinementEvents(IEvent event,
+	private static IEvent[] getRefinementEvents(IEvent event,
 			IMachineRoot refMachine) throws RodinDBException {
+		if (event.isInitialisation())
+			for (IEvent refEvent : refMachine.getEvents())
+				if (refEvent.isInitialisation())
+					return new IEvent[] {refEvent};
 		Collection<IEvent> result = new ArrayList<IEvent>();
 		for (IEvent refEvent : refMachine.getEvents()) {
 			IRefinesEvent[] refines = refEvent.getRefinesClauses();
@@ -143,6 +150,18 @@ public class PatternUtils {
 			}
 		}
 		return result.toArray(new IEvent[result.size()]);
+	}
+	
+	public static IMachineRoot[] getRefinementMachines(IMachineRoot machine) throws RodinDBException {
+		Collection<IMachineRoot> result = new ArrayList<IMachineRoot>();
+		for (IMachineRoot refMachine : machine.getRodinProject().getRootElementsOfType(IMachineRoot.ELEMENT_TYPE)) {
+			IRefinesMachine[] refines = refMachine.getRefinesClauses();
+			for (IRefinesMachine ref : refines) {
+				if (ref.getAbstractMachineName().equals(machine.getElementName()))
+					result.add(refMachine);
+			}
+		}
+		return result.toArray(new IMachineRoot[result.size()]);
 	}
 	
 	
@@ -402,6 +421,9 @@ public class PatternUtils {
 
 	public static String getDisplayText(Object element) {
 
+		if (element == null)
+			return "NULL";
+		
 		// If the element has a predicate then return the predicate.
 		if (element instanceof IPredicateElement) {
 			try {
@@ -617,4 +639,94 @@ public class PatternUtils {
 			return name;
 		}
 	}
+	
+	public static IEvent[] getRefinementsOfEvent(IMachineRoot current, IEvent event) {
+		return getRefinementsOfEvents(current, new IEvent[] {event});
+	}
+	
+	public static IEvent[] getRefinementsOfEvents(IMachineRoot current, IEvent[] events) {
+		// get machineRoot of events and check that all events belong to the same machine
+		if (events != null && events.length > 0) {
+			IMachineRoot baseMachine = (IMachineRoot)events[0].getParent();
+			for (IEvent evt : events)
+				if (!evt.getParent().equals(baseMachine))
+					return null;
+			return getRefinementsOfEvents(current, baseMachine, events);
+		}
+		else
+			return null;
+	}
+	
+	public static IEvent[] getRefinementsOfEvents(IMachineRoot current, Collection<IEvent> events) {
+		return getRefinementsOfEvents(current, events.toArray(new IEvent[events.size()]));
+	}
+	
+	private static IEvent[] getRefinementsOfEvents(IMachineRoot current, IMachineRoot baseMachine, IEvent[] events) {
+		// base case
+		if (current.equals(baseMachine))
+			return events;
+		// recursive step
+		IRefinesMachine[] refinesClauses;
+		IMachineRoot abstractMachine;
+		try {
+			refinesClauses = current.getRefinesClauses();
+			// baseMachine could not be reached
+			if (refinesClauses == null || refinesClauses.length <= 0)
+				return null;
+			abstractMachine = refinesClauses[0].getAbstractMachineRoot();
+			Collection<IEvent> result = new HashSet<IEvent>();
+			IEvent[] abstractEvents = getRefinementsOfEvents(abstractMachine, baseMachine, events);
+			if (abstractEvents == null)
+				return null;
+			for (IEvent evt : abstractEvents) {
+				for (IEvent newEvt: getRefinementEvents(evt, current))
+						result.add(newEvt);
+			}
+			return result.toArray(new IEvent[result.size()]);
+		} catch (RodinDBException e) {
+			return null;
+		}
+	}
+	
+		
+		
+	public static Collection<IEvent> getNotMatchedProblemEvents(MatchingMachine matching) {
+		IMachineRoot problemMachine = matching.getProblemElement();
+		if (problemMachine != null) {
+			Collection<IEvent> events = new ArrayList<IEvent>();
+			try {
+				for (IEvent evt : problemMachine.getEvents())
+					events.add(evt);
+			} catch (RodinDBException e) {
+				return null;
+			}
+			Collection<IEvent> matchedEvents = new ArrayList<IEvent>();
+			for (ComplexMatching<IEvent> match : matching.getChildrenOfTypeEvent())
+				matchedEvents.add(match.getProblemElement());
+			events.removeAll(matchedEvents);
+			return events;
+		}
+		else
+			return null;
+	}
+	
+	public static Collection<IEvent> getNewPatternEvents(MatchingMachine matching, IMachineRoot refinementMachine) {
+		IMachineRoot patternMachine = matching.getPatternElement();
+		if (patternMachine != null) {
+			Collection<IEvent> events = new ArrayList<IEvent>();
+			try {
+				for (IEvent evt : refinementMachine.getEvents())
+					events.add(evt);
+				for (IEvent refinementEvent : PatternUtils.getRefinementsOfEvents(refinementMachine, patternMachine.getEvents()))
+					events.remove(refinementEvent);
+			} catch (RodinDBException e) {
+				return null;
+			}
+			
+			return events;
+		}
+		else
+			return null;
+	}
+
 }

@@ -36,6 +36,8 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -44,6 +46,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.ui.WorkbenchException;
 import org.eventb.core.IAction;
 import org.eventb.core.ICarrierSet;
 import org.eventb.core.IConstant;
@@ -66,6 +69,7 @@ import org.rodinp.core.RodinDBException;
 import org.rodinp.keyboard.RodinKeyboardPlugin;
 
 import ch.ethz.eventb.internal.pattern.ActionPerformer;
+import ch.ethz.eventb.internal.pattern.Data;
 import ch.ethz.eventb.internal.pattern.MyComboBoxCellEditor;
 import ch.ethz.eventb.internal.pattern.PatternUtils;
 
@@ -118,6 +122,10 @@ public class MatchingWizardPage extends WizardPage {
 	private Collection<IRodinFile> openFiles;
 	
 	private Dialog dialog;
+	
+	private Data data;
+	
+	private RodinKeyboardPlugin keyboard = RodinKeyboardPlugin.getDefault();
 	
 		
 
@@ -210,34 +218,46 @@ public class MatchingWizardPage extends WizardPage {
 	 * @param selection
 	 *            the current selection.
 	 */
-	public MatchingWizardPage(ISelection selection, Collection<IRodinFile> openFiles) {
+	public MatchingWizardPage(ISelection selection, Collection<IRodinFile> openFiles, Data data) {
 		super("wizardPage");
 		setTitle("Event-B Pattern. Step 1");
 		setDescription("This step is for developer to choose the matching of variables and events");
 		this.selection = selection;
 		this.openFiles = openFiles;
 		page = this;
+		this.data = data;
 	}
 	
 	
 	public void loadMatchingMachine(MatchingMachine matching, 
 			Renaming<ICarrierSet> carrierSetRenaming,
-			Renaming<IConstant> constantRenaming){
+			Renaming<IConstant> constantRenaming) throws Exception{
+		IRodinProject patternProject = matching.getPatternProject();
+		if (patternProject == null || !patternProject.exists())
+			throw new Exception("Pattern project \"" + patternProject.getElementName() + "\" cannot be loaded.");
+		IRodinProject problemProject = matching.getProblemProject();
+		if (problemProject == null || !problemProject.exists())
+			throw new Exception("Problem project \"" + problemProject.getElementName() + "\" cannot be loaded.");
+		IMachineRoot patternMachine = matching.getPatternElement();
+		if (patternMachine == null)
+			throw new Exception("Pattern machine \"" + matching.getPatternID() + "\" cannot be loaded.");
+		IMachineRoot problemMachine = matching.getProblemElement();
+		if (problemMachine == null)
+			throw new Exception("Problem machine \"" + matching.getProblemID() + "\" cannot be loaded.");
 		
-		patternGroup.getProjectChooser().setElement(matching.getPatternProject());
-		patternGroup.getMachineChooser().setElement(matching.getPatternElement());
-		patternMachineChanged();
-		problemGroup.getProjectChooser().setElement(matching.getProblemProject());
-		problemGroup.getMachineChooser().setElement(matching.getProblemElement());
-		problemMachineChanged();
+		patternGroup.getProjectChooser().setElement(patternProject);
+		patternGroup.getMachineChooser().setElement(patternMachine);
+		problemGroup.getProjectChooser().setElement(problemProject);
+		problemGroup.getMachineChooser().setElement(problemMachine);
 		this.matching = matching;
+		data.loadMatching(matching);
 		variableGroup.setInput(matching);
 		eventGroup.setInput(matching);
 		this.carrierSetRenaming = carrierSetRenaming;
 		this.constantRenaming = constantRenaming;
 		context.setInput(matching);
 		combo.setItems(comboContent.toArray(new String[comboContent.size()]));
-		pageChanged.performAction();
+//		pageChanged.performAction();
 	}
 	
 	
@@ -301,7 +321,7 @@ public class MatchingWizardPage extends WizardPage {
 								
 		context.setContentProvider(new ContextContentProvider());
 		
-		TableViewerColumn patternContext = new TableViewerColumn(context,SWT.NONE);
+		final TableViewerColumn patternContext = new TableViewerColumn(context,SWT.NONE);
 		patternContext.getColumn().setWidth(100);
 		patternContext.setLabelProvider(new CellLabelProvider(){
 		    @Override
@@ -313,7 +333,7 @@ public class MatchingWizardPage extends WizardPage {
 		});
 		
 	
-		TableViewerColumn problemContext = new TableViewerColumn(context,SWT.NONE);
+		final TableViewerColumn problemContext = new TableViewerColumn(context,SWT.NONE);
 		problemContext.getColumn().setWidth(100);
 		problemContext.setLabelProvider(new CellLabelProvider(){
 		    @Override
@@ -367,19 +387,35 @@ public class MatchingWizardPage extends WizardPage {
 //		    	}
 //		    	else {
 		    	if ((Integer)value >= 0) {
-		    		if (element instanceof ICarrierSet)
+		    		if (element instanceof ICarrierSet) {
 		    			carrierSetRenaming.addPair((ICarrierSet)element, PatternUtils.getDisplayText(comboContent.get((Integer)value)));
-		    		else
+		    			try {
+							data.updateMatching((ICarrierSet)element, comboContent.get((Integer)value));
+						} catch (Exception e) {}
+		    		}
+		    		else {
 		    			constantRenaming.addPair((IConstant)element, PatternUtils.getDisplayText(comboContent.get((Integer)value)));
+		    			try {
+							data.updateMatching((IConstant)element, comboContent.get((Integer)value));
+						} catch (Exception e) {}
+		    		}
 		    	}
 		    	else if (!combo.getText().equals("")) {
-					String translateStr = RodinKeyboardPlugin.getDefault().translate(combo.getText());
+					String translateStr = keyboard.translate(combo.getText());
 					if (!combo.getText().equals(translateStr))
 						combo.setText(translateStr);
-		    		if (element instanceof ICarrierSet)
+		    		if (element instanceof ICarrierSet) {
 		    			carrierSetRenaming.addPair((ICarrierSet)element, combo.getText());
-		    		else
-		    			constantRenaming.addPair((IConstant)element, combo.getText());	
+		    			try {
+							data.updateMatching((ICarrierSet)element, combo.getText());
+						} catch (Exception e) {}
+		    		}
+		    		else {
+		    			constantRenaming.addPair((IConstant)element, combo.getText());
+		    			try {
+							data.updateMatching((IConstant)element, combo.getText());
+						} catch (Exception e) {}
+		    		}
 		    	}
 //		    	}
 		    		context.setInput(matching);
@@ -387,9 +423,21 @@ public class MatchingWizardPage extends WizardPage {
 
 		});
 		
+		contextGroup.addControlListener(new ControlAdapter() {
+
+			@Override
+			public void controlResized(ControlEvent e) {
+				int width = context.getTable().getSize().x;
+				patternContext.getColumn().setWidth(width/2);
+				problemContext.getColumn().setWidth(width/2);
+				super.controlResized(e);
+			}
+			
+		});
+		
 		// Create the variable matching group.
 		variableGroup = new MatchingGroup<IVariable>(container, SWT.DEFAULT,
-				IVariable.ELEMENT_TYPE);
+				IVariable.ELEMENT_TYPE, data);
 		variableGroup.getGroup().setText("Matching variable");
 		gd = new GridData(GridData.FILL_BOTH);
 		gd.horizontalSpan = 2;
@@ -397,7 +445,7 @@ public class MatchingWizardPage extends WizardPage {
 
 		variableGroup.getActionPerformer().addListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
-				variableGroup.setInput(matching);
+//				variableGroup.setInput(matching);
 				pageChanged.performAction();
 				updateStatus(null);
 			}
@@ -405,7 +453,7 @@ public class MatchingWizardPage extends WizardPage {
 		
 		// Create the event matching group
 		eventGroup = new ExtendedMatchingGroup(container, SWT.DEFAULT,
-				IEvent.ELEMENT_TYPE);
+				IEvent.ELEMENT_TYPE, data);
 		eventGroup.getGroup().setText("Matching event");
 		gd = new GridData(GridData.FILL_BOTH);
 		gd.horizontalSpan = 2;
@@ -414,7 +462,7 @@ public class MatchingWizardPage extends WizardPage {
 		
 		eventGroup.getActionPerformer().addListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
-				eventGroup.setInput(matching);
+//				eventGroup.setInput(matching);
 				pageChanged.performAction();
 				updateStatus(null);
 			}
@@ -535,11 +583,12 @@ public class MatchingWizardPage extends WizardPage {
 	 * </ul>
 	 */
 	protected void patternMachineChanged() {
-		if (checkPatternMachine()) {
+//		if (checkPatternMachine()) {
 			final IMachineRoot patternMachine = patternGroup.getMachineChooser().getElement();
+			
 			variableGroup.getPatternChooser().setInput(patternMachine);
 			eventGroup.getPatternChooser().setInput(patternMachine);
-			if (!openFiles.contains(patternMachine.getRodinFile())){
+			if (patternMachine != null && !openFiles.contains(patternMachine.getRodinFile())){
 				openFiles.add(patternMachine.getRodinFile());
 				// set all events to not extended
 				try {
@@ -571,13 +620,21 @@ public class MatchingWizardPage extends WizardPage {
 				} catch (InterruptedException e) {
 				}
 			}
+			try {
+				if (patternMachine != null)
+					data.changePatternAbstractMachine(patternMachine);
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
 			matchingChanged();
-		}
-		else {
-			variableGroup.getPatternChooser().setInput(null);
-			eventGroup.getPatternChooser().setInput(null);
-			context.setInput(null);
-		}
+//		}
+//		else {
+//			variableGroup.getPatternChooser().setInput(null);
+//			eventGroup.getPatternChooser().setInput(null);
+//			context.setInput(null);
+//		}
 		updateStatus(null);
 	}
 
@@ -588,11 +645,12 @@ public class MatchingWizardPage extends WizardPage {
 	 * <li>Reset the input for the problem event matching.</li>
 	 */
 	protected void problemMachineChanged() {
-		if (checkProblemMachine()) {
+//		if (checkProblemMachine()) {
 			final IMachineRoot problemMachine = problemGroup.getMachineChooser().getElement();
+			
 			variableGroup.getProblemChooser().setInput(problemMachine);
 			eventGroup.getProblemChooser().setInput(problemMachine);
-			if (!openFiles.contains(problemMachine.getRodinFile())){
+			if (problemMachine != null && !openFiles.contains(problemMachine.getRodinFile())){
 				openFiles.add(problemMachine.getRodinFile());
 				// set all events to not extended
 				try {
@@ -625,13 +683,21 @@ public class MatchingWizardPage extends WizardPage {
 				}
 						
 			}
+			try {
+				if (problemMachine != null)
+					data.changeProblemMachine(problemMachine);
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
 			matchingChanged();
-		}
-		else {
-			variableGroup.getProblemChooser().setInput(null);
-			eventGroup.getProblemChooser().setInput(null);
-			context.setInput(null);
-		}
+//		}
+//		else {
+//			variableGroup.getProblemChooser().setInput(null);
+//			eventGroup.getProblemChooser().setInput(null);
+//			context.setInput(null);
+//		}
 		updateStatus(null);
 	}
 
@@ -721,11 +787,12 @@ public class MatchingWizardPage extends WizardPage {
 		if (problemMachine != null && patternMachine != null) {
 			try {
 				matching = new MatchingMachine(patternMachine, problemMachine);
-				matching.addComplexMatching(PatternUtils.getElementByLabel(IEvent.ELEMENT_TYPE, IEvent.INITIALISATION, problemMachine),
-						PatternUtils.getElementByLabel(IEvent.ELEMENT_TYPE, IEvent.INITIALISATION, patternMachine),
-						IEvent.ELEMENT_TYPE);
-			} catch (RodinDBException e) {
-				// TODO Auto-generated catch block
+				IEvent patternInit = PatternUtils.getElementByLabel(IEvent.ELEMENT_TYPE, IEvent.INITIALISATION, patternMachine);
+				IEvent problemInit = PatternUtils.getElementByLabel(IEvent.ELEMENT_TYPE, IEvent.INITIALISATION, problemMachine);
+				matching.addComplexMatching(patternInit, problemInit, IEvent.ELEMENT_TYPE);
+				data.addMatching(patternInit, problemInit);
+				
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 			variableGroup.setInput(matching);

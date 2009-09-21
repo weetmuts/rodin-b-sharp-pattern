@@ -14,6 +14,8 @@ import org.eventb.core.IGuard;
 import org.eventb.core.IParameter;
 import org.rodinp.core.RodinDBException;
 
+import ch.ethz.eventb.internal.pattern.Data;
+
 /**
  * A simple input dialog for soliciting an input string from the user.
  * <p>
@@ -38,12 +40,15 @@ public class SubmatchingDialog extends Dialog {
 	
 	// The matching between problem and pattern event	
 	private ComplexMatching<IEvent> matching;
+	
+	private Data data;
 
 
-    public SubmatchingDialog(Shell parentShell, String dialogTitle, ComplexMatching<IEvent> matching) {
+    public SubmatchingDialog(Shell parentShell, String dialogTitle, ComplexMatching<IEvent> matching, Data data) {
         super(parentShell);
         this.title = dialogTitle;
         this.matching = matching;
+        this.data = data;
     }
 
     /*
@@ -86,7 +91,7 @@ public class SubmatchingDialog extends Dialog {
 			
 		// Create the parameter matching group.
 		parameterGroup = new MatchingGroup<IParameter>(composite, SWT.DEFAULT,
-				IParameter.ELEMENT_TYPE);
+				IParameter.ELEMENT_TYPE, data);
 		parameterGroup.getGroup().setText("Matching parameter");
 		gd = new GridData(GridData.FILL_BOTH);
 		gd.horizontalSpan = 2;
@@ -106,7 +111,7 @@ public class SubmatchingDialog extends Dialog {
 	
 		// Create the variable matching group.
 		guardGroup = new MatchingGroup<IGuard>(composite, SWT.DEFAULT,
-				IGuard.ELEMENT_TYPE);
+				IGuard.ELEMENT_TYPE, data);
 		guardGroup.getGroup().setText("Matching guard");
 		gd = new GridData(GridData.FILL_BOTH);
 		gd.horizontalSpan = 2;
@@ -126,7 +131,7 @@ public class SubmatchingDialog extends Dialog {
 		
 		// Create the event matching group
 		actionGroup = new MatchingGroup<IAction>(composite, SWT.DEFAULT,
-				IAction.ELEMENT_TYPE);
+				IAction.ELEMENT_TYPE, data);
 		actionGroup.getGroup().setText("Matching action");
 		gd = new GridData(GridData.FILL_BOTH);
 		gd.horizontalSpan = 2;

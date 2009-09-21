@@ -23,17 +23,19 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
 import org.eventb.core.IEvent;
 import org.eventb.core.IMachineRoot;
 import org.eventb.core.IVariable;
 import org.rodinp.core.IRodinProject;
 import org.rodinp.core.RodinDBException;
 
+import ch.ethz.eventb.internal.pattern.Data;
 import ch.ethz.eventb.internal.pattern.Pair;
 import ch.ethz.eventb.internal.pattern.PatternUtils;
 
@@ -49,12 +51,10 @@ import ch.ethz.eventb.internal.pattern.PatternUtils;
 public class RenamingWizardPage extends WizardPage {
 
 	private MatchingWizardPage matchingPage;
+	
+	private MergingWizardPage mergingPage;
 
-	private ElementChooserViewer<IMachineRoot> refMachineChooser;
-	
 	private IMachineRoot root;
-	
-	private Label projectLabel;
 	
 	private TableViewer variables;
 	
@@ -64,6 +64,7 @@ public class RenamingWizardPage extends WizardPage {
 	
 	private Renaming<IEvent> renamedEvents;
 	
+	private Data data;
 	
 	/**
 	 * @author fuersta
@@ -149,10 +150,32 @@ public class RenamingWizardPage extends WizardPage {
 						refEvents.add(evt.getLabel());
 				
 				for(Matching<IEvent> match : matchingPage.getMatching().getChildrenOfType(IEvent.ELEMENT_TYPE)) {
-					for (IEvent evt : PatternUtils.getRefinementEvents(match.getPatternElement(), root)) {
+					for (IEvent evt : PatternUtils.getRefinementsOfEvent(root, match.getPatternElement())) {
 						result.add(new Pair<String, String>(evt.getLabel(),match.getProblemID()));
 						refEvents.remove(evt.getLabel());
 					}
+				}
+				Collection<IEvent> problemEvents = new ArrayList<IEvent>();
+				for (Matching<IEvent> match : mergingPage.getMerging().getChildrenOfType(IEvent.ELEMENT_TYPE)) {
+					IEvent problemEvent = match.getProblemElement();
+					if (!problemEvents.contains(problemEvent))
+						problemEvents.add(problemEvent);
+				}
+				for (IEvent problemEvent : problemEvents) {
+					Collection<IEvent> patternEvents = new ArrayList<IEvent>();
+					for (Matching<IEvent> match : mergingPage.getMerging().getChildrenOfType(IEvent.ELEMENT_TYPE)) {
+						if (match.getProblemElement().equals(problemEvent)) {
+							IEvent patternEvent = match.getPatternElement();
+							refEvents.remove(patternEvent.getLabel());
+							if (!patternEvents.contains(patternEvent))
+								patternEvents.add(patternEvent);
+						}
+					}
+					String pattern = "{\n";
+					for (IEvent patternEvent : patternEvents) 
+						pattern += patternEvent.getLabel()+"\n";
+					pattern += "}";
+					result.add(new Pair<String, String>(problemEvent.getLabel(), pattern));
 				}
 				for (String evt : refEvents)
 					result.add(new Pair<String, String>(evt,""));
@@ -196,11 +219,13 @@ public class RenamingWizardPage extends WizardPage {
 	 * 
 	 * @param pageName
 	 */
-	public RenamingWizardPage(MatchingWizardPage matchingPage) {
+	public RenamingWizardPage(MatchingWizardPage matchingPage, MergingWizardPage mergingPage, Data data) {
 		super("wizardPage");
-		setTitle("Event-B Pattern. Step 3");
+		setTitle("Event-B Pattern. Step 4");
 		setDescription("This step is for developers to choose the renaming before incorporating the pattern.");
 		this.matchingPage = matchingPage;
+		this.mergingPage = mergingPage;
+		this.data = data;
 	}
 
 	/**
@@ -212,58 +237,6 @@ public class RenamingWizardPage extends WizardPage {
 		gl.numColumns = 2;
 		container.setLayout(gl);
 	
-		// Project Label
-		Label label = new Label(container, SWT.NONE);
-		label.setText("Project:");
-		label.setLayoutData(new GridData());
-		
-		projectLabel = new Label(container, SWT.NONE);
-		MachineChooserGroup patternGroup = matchingPage.getPatternGroup();
-		final ElementChooserViewer<IRodinProject> projectChooser = patternGroup.getProjectChooser();
-		projectChooser.addSelectionChangedListener(new ISelectionChangedListener() {
-
-			public void selectionChanged(SelectionChangedEvent event) {
-				projectChanged(projectChooser.getElement());
-			}
-			
-		});
-		projectLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-		// Machine Label
-		label = new Label(container, SWT.NONE);
-		label.setText("Pattern refinment machine");
-		label.setLayoutData(new GridData());
-		
-		refMachineChooser = new ElementChooserViewer<IMachineRoot>(container,
-				IMachineRoot.ELEMENT_TYPE);
-		refMachineChooser.getControl().setLayoutData(
-				new GridData(GridData.FILL_HORIZONTAL));
-		refMachineChooser.addSelectionChangedListener(
-				new ISelectionChangedListener() {
-
-					/*
-					 * (non-Javadoc)
-					 * 
-					 * @seeorg.eclipse.jface.viewers.ISelectionChangedListener#
-					 * selectionChanged
-					 * (org.eclipse.jface.viewers.SelectionChangedEvent)
-					 */
-					public void selectionChanged(SelectionChangedEvent event) {
-						refMachineChooser.getElement();
-						
-						if (refMachineChooser.getElement() == null) {
-							updateStatus("A refinement machine must be chosen");
-							return;
-						}
-						else if (!refMachineChooser.getElement().getSCMachineRoot().exists()) {
-							updateStatus("The refinement machine must be a checked model");
-							return;
-						}
-						refMachineChanged();
-					}
-
-				});
-
 		
 		// Table viewer of the matching
 		Group variableGroup = new Group(container,SWT.NULL);
@@ -273,16 +246,15 @@ public class RenamingWizardPage extends WizardPage {
 		variableGroup.setLayoutData(gd);
 		variableGroup.setLayout(gl);
 		
-		variables = new TableViewer(variableGroup, SWT.NULL);
+		variables = new TableViewer(variableGroup, SWT.NONE);
 		
 		variables.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
 		
 								
 		variables.setContentProvider(new VariableContentProvider());
 		
-		TableViewerColumn originalVariables = new TableViewerColumn(variables,SWT.NONE);
+		final TableViewerColumn originalVariables = new TableViewerColumn(variables,SWT.NONE);
 		originalVariables.getColumn().setWidth(200);
-		originalVariables.getColumn().setResizable(true);
 		originalVariables.setLabelProvider(new CellLabelProvider(){
 		    @Override
 		    public void update(ViewerCell cell) {
@@ -292,9 +264,8 @@ public class RenamingWizardPage extends WizardPage {
 
 		});
 		
-		TableViewerColumn renamedVars = new TableViewerColumn(variables,SWT.NONE);
+		final TableViewerColumn renamedVars = new TableViewerColumn(variables,SWT.NONE);
 		renamedVars.getColumn().setWidth(200);
-		originalVariables.getColumn().setResizable(true);
 		renamedVars.setLabelProvider(new CellLabelProvider(){
 		    @Override
 		    public void update(ViewerCell cell) {
@@ -325,12 +296,27 @@ public class RenamingWizardPage extends WizardPage {
 		    	if (!value.toString().equals("")){
 		    		renamedVariables.addPair((IVariable)element, value.toString());
 		    		variables.setInput(root);
+		    		try {
+						data.updateRenaming((IVariable)element, value.toString());
+					} catch (Exception e) {}
 		    		updateStatus(null);
 		    	}
 		    }
 
 		});
 		
+		
+		variableGroup.addControlListener(new ControlAdapter() {
+
+			@Override
+			public void controlResized(ControlEvent e) {
+				int width = variables.getTable().getSize().x;
+				originalVariables.getColumn().setWidth(width/2);
+				renamedVars.getColumn().setWidth(width/2);
+				super.controlResized(e);
+			}
+			
+		});
 		
 		matchingPage.getVariableGroup().getActionPerformer().addListener( new ActionListener() {
 
@@ -354,29 +340,38 @@ public class RenamingWizardPage extends WizardPage {
 		events.setContentProvider(new EventContentProvider());
 		events.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
 
-		TableViewerColumn originalEvents = new TableViewerColumn(events,SWT.NONE);
+		final TableViewerColumn originalEvents = new TableViewerColumn(events,SWT.NONE);
 		originalEvents.getColumn().setWidth(200);
 		originalEvents.setLabelProvider(new CellLabelProvider(){
 		    @Override
 		    public void update(ViewerCell cell) {
 		    	String label = ((Pair<String,String>)cell.getElement()).getFirst();
 		    	String matched = ((Pair<String,String>)cell.getElement()).getSecond();
-		    	if (!matched.equals(""))
-		    		cell.setText(label+" ("+matched+")");
+		    	if (!matched.equals("")) {
+		    		if (matched.charAt(0) == '{')
+		    			cell.setText(label+matched);
+		    		else
+		    			cell.setText(label+" ("+matched+")");
+		    	}
 		    	else
 		    		cell.setText(label);
 		    }
 
 		});
 		
-		TableViewerColumn renamedEvts = new TableViewerColumn(events,SWT.NONE);
+		final TableViewerColumn renamedEvts = new TableViewerColumn(events,SWT.NONE);
 		renamedEvts.getColumn().setWidth(200);
 		renamedEvts.setLabelProvider(new CellLabelProvider(){
 		    @Override
 		    public void update(ViewerCell cell) {
-		       cell.setText(renamedEvents.getRenamingOfElement(
-		    		   ((Pair<String,String>)cell.getElement()).getFirst(),
-		    		   ((Pair<String,String>)cell.getElement()).getSecond()));
+		    	String first = ((Pair<String,String>)cell.getElement()).getFirst();
+		    	String second = ((Pair<String,String>)cell.getElement()).getSecond();
+		    	if (!second.equals("") && second.charAt(0) == '{')
+		    		cell.setText(renamedEvents.getRenamingOfElement(first,""));
+		    	else
+		    		cell.setText(renamedEvents.getRenamingOfElement(first, second));
+		    			
+		    	
 		    }
 
 		});
@@ -397,15 +392,47 @@ public class RenamingWizardPage extends WizardPage {
 
 		    @Override
 		    protected Object getValue(Object element) {
-		        return renamedEvents.getRenamingOfElement(((Pair<String,String>)element).getFirst(),
-		        		((Pair<String,String>)element).getSecond());
+		    	String first = ((Pair<String,String>)element).getFirst();
+		    	String second = ((Pair<String,String>)element).getSecond();
+		    	if (!second.equals("") && second.charAt(0) == '{')
+		    		return renamedEvents.getRenamingOfElement(first, "");
+		    	else
+		    		return renamedEvents.getRenamingOfElement(first, second);
+		        
 		    }
 
 		    @Override
 		    protected void setValue(Object element, Object value) {
 		    	if (!value.toString().equals("")){
-		    		renamedEvents.addPair(((Pair<String,String>)element).getFirst(),
-		    				((Pair<String,String>)element).getSecond(),value.toString());
+		    		String first = ((Pair<String,String>)element).getFirst();
+		    		String second = ((Pair<String,String>)element).getSecond();
+			    	if (!second.equals("")) {
+			    		if (second.charAt(0) == '{'){
+			    			renamedEvents.addPair(first, "", value.toString());
+			    			try {
+				    			IEvent problemEvent = PatternUtils.getElementByLabel(IEvent.ELEMENT_TYPE, first, data.getProblemMachine());
+				    			assert problemEvent.exists();
+			    				data.updateRenamingOfMergedEvent(problemEvent, value.toString());
+							} catch (Exception e) {}
+			    		}
+			    		else {
+			    			renamedEvents.addPair(first, second, value.toString());
+			    			try {
+				    			IEvent patternRefinementEvent = PatternUtils.getElementByLabel(IEvent.ELEMENT_TYPE, first, data.getPatternRefinementMachine());
+				    			IEvent problemEvent = PatternUtils.getElementByLabel(IEvent.ELEMENT_TYPE, second, data.getProblemMachine());
+				    			assert patternRefinementEvent.exists() && problemEvent.exists();
+			    				data.updateRenamingOfMatchedEvent(patternRefinementEvent, problemEvent, value.toString());
+							} catch (Exception e) {}
+			    		}
+			    	}
+			    	else {
+			    		renamedEvents.addPair(first, second, value.toString());
+			    		try {
+				    		IEvent patternRefinementEvent = PatternUtils.getElementByLabel(IEvent.ELEMENT_TYPE, first, data.getPatternRefinementMachine());
+				    		assert patternRefinementEvent.exists();
+			    			data.updateRenamingOfNewEvent(patternRefinementEvent, value.toString());
+						} catch (Exception e) {}
+			    	}
 			    	events.setInput(root);
 			    	updateStatus(null);
 		    	}
@@ -414,6 +441,19 @@ public class RenamingWizardPage extends WizardPage {
 		    }
 
 		});
+		
+		eventGroup.addControlListener(new ControlAdapter() {
+
+			@Override
+			public void controlResized(ControlEvent e) {
+				int width = events.getTable().getSize().x;
+				originalEvents.getColumn().setWidth(width/2);
+				renamedEvts.getColumn().setWidth(width/2);
+				super.controlResized(e);
+			}
+			
+		});
+		
 		
 		matchingPage.getEventGroup().getActionPerformer().addListener( new ActionListener() {
 
@@ -424,35 +464,34 @@ public class RenamingWizardPage extends WizardPage {
 			}
 			
 		});
+		
+		mergingPage.getRefinementChooser().addSelectionChangedListener(new ISelectionChangedListener() {
 
+			public void selectionChanged(SelectionChangedEvent event) {
+				initializeVariables();
+				initializeEvents();
+				variables.setInput(mergingPage.getPatternRefinmentMachine());
+				events.setInput(mergingPage.getPatternRefinmentMachine());
+				updateStatus(null);;			
+			}
+		});
+		
+		mergingPage.getEventGroup().getActionPerformer().addListener( new ActionListener() {
+
+			public void actionPerformed(ActionEvent e) {
+				initializeEvents();
+				events.setInput(root);
+				updateStatus(null);
+			}
+			
+		});
+		
 		initialize();
 		setControl(container);
 	}
 	
 	
 	
-	
-	private void refMachineChanged(){
-		initializeVariables();
-		initializeEvents();
-		variables.setInput(refMachineChooser.getElement());
-		events.setInput(refMachineChooser.getElement());
-		updateStatus(null);
-	}
-
-	protected void projectChanged(IRodinProject project) {
-		if (project != null)
-			projectLabel.setText(project.getElementName());
-		else
-			projectLabel.setText("-- UNDEFINED --");
-		
-		refMachineChooser.setInput(project);
-		updateStatus("A refinement has to be chosen");
-		variables.setInput(null);
-		events.setInput(null);
-		
-	}
-
 	/**
 	 * Tests if the current workbench selection is a suitable container to use.
 	 */
@@ -466,29 +505,29 @@ public class RenamingWizardPage extends WizardPage {
 		renamedVariables = new Renaming<IVariable>();
 		events.setInput(element);
 		renamedEvents = new Renaming<IEvent>();
-		projectChanged(element);
-		
 	}
 
 	private void initializeVariables () {
-		IMachineRoot refMachine = refMachineChooser.getElement();
+		IMachineRoot refMachine = mergingPage.getPatternRefinmentMachine();
 		if (refMachine != null) {
 			renamedVariables = new Renaming<IVariable>();
 			Matching<IVariable>[] variableMatchings = matchingPage.getMatching().getChildrenOfType(IVariable.ELEMENT_TYPE);
 			try {
 				for (IVariable var : refMachine.getVariables()) {
 					Matching<IVariable> match = PatternUtils.getMatching(var.getIdentifierString(), null, variableMatchings);
-					if (match != null)
+					if (match != null) {
 						renamedVariables.addPair(match.getPatternID(), match.getProblemID());
+						data.updateRenaming(var, match.getProblemID());
+					} 
 					else
 						renamedVariables.addPair(var.getIdentifierString(), var.getIdentifierString());
 				}
-			} catch (RodinDBException e) {}
+			} catch (Exception e) {}
 		}
 	}
 
 	private void initializeEvents () {
-		IMachineRoot refMachine = refMachineChooser.getElement();
+		IMachineRoot refMachine = mergingPage.getPatternRefinmentMachine();
 		if (refMachine != null) {
 			renamedEvents = new Renaming<IEvent>();
 			try {
@@ -497,9 +536,18 @@ public class RenamingWizardPage extends WizardPage {
 					if (!evt.isInitialisation())
 						refEvents.add(evt.getLabel());
 				for(Matching<IEvent> match : matchingPage.getMatching().getChildrenOfType(IEvent.ELEMENT_TYPE)) {
-					for (IEvent evt : PatternUtils.getRefinementEvents(match.getPatternElement(), refMachine)) {
+					for (IEvent evt : PatternUtils.getRefinementsOfEvent(refMachine, match.getPatternElement())) {
 						renamedEvents.addPair(evt.getLabel(), match.getProblemID(), match.getProblemID());
 						refEvents.remove(evt.getLabel());
+					}
+				}
+				Collection<IEvent> problemEvents = new ArrayList<IEvent>();
+				for (Matching<IEvent> match : mergingPage.getMerging().getChildrenOfType(IEvent.ELEMENT_TYPE)) {
+					refEvents.remove(match.getPatternID());
+					IEvent problemEvent = match.getProblemElement();
+					if (!problemEvents.contains(problemEvent)){
+						problemEvents.add(problemEvent);
+						renamedEvents.addPair(problemEvent.getLabel(),"",problemEvent.getLabel());
 					}
 				}
 				for (String evt : refEvents)
@@ -507,6 +555,8 @@ public class RenamingWizardPage extends WizardPage {
 			}catch (RodinDBException e) {}
 		}
 	}
+	
+	
 		
 	private String checkRenaming() {
 		try {
@@ -523,31 +573,38 @@ public class RenamingWizardPage extends WizardPage {
 				
 			// check for variable renaming that already exists in problem machine
 			Set<String> notMatchedVariables = new HashSet<String>();
-			for (IVariable var : matchingPage.getMatching().getProblemElement().getVariables())
-				if (!PatternUtils.isInMatchings(null, var, matchingPage.getMatching().getChildrenOfType(IVariable.ELEMENT_TYPE)))
-					notMatchedVariables.add(var.getIdentifierString());
-			for (String renaming : renamedVariables.getRenameList())
-				if (notMatchedVariables.contains(renaming))
-					return "Variable " + renaming + " already exists in problem machine";
-			
-			// check for duplicate event renaming
-			renamings = renamedEvents.getRenameList();
-			size = renamings.size();
-			for (int i=0 ; i<size; i++) {
-				element = renamings.get(i);
-				for (int j=i+1; j<size; j++)
-					if (element.equals(renamings.get(j)))
-						return "Duplicate event renaming: " + element;
+			MatchingMachine matching = matchingPage.getMatching();
+			if (matching != null) {
+				for (IVariable var : matching.getProblemElement().getVariables())
+					if (!PatternUtils.isInMatchings(null, var, matching.getChildrenOfType(IVariable.ELEMENT_TYPE)))
+						notMatchedVariables.add(var.getIdentifierString());
+				for (String renaming : renamedVariables.getRenameList())
+					if (notMatchedVariables.contains(renaming))
+						return "Variable " + renaming + " already exists in problem machine";
+				
+				// check for duplicate event renaming
+				renamings = renamedEvents.getRenameList();
+				size = renamings.size();
+				for (int i=0 ; i<size; i++) {
+					element = renamings.get(i);
+					for (int j=i+1; j<size; j++)
+						if (element.equals(renamings.get(j)))
+							return "Duplicate event renaming: " + element;
+				}
+				
+				// check for event renaming that already exists in problem machine
+				Set<String> notMatchedEvents = new HashSet<String>();
+				for (IEvent evt : matchingPage.getMatching().getProblemElement().getEvents())
+					if (!PatternUtils.isInMatchings(null, evt, matchingPage.getMatching().getChildrenOfType(IEvent.ELEMENT_TYPE)))
+						notMatchedEvents.add(evt.getLabel());
+				List<String> source = renamedEvents.getSourceList();
+				List<String> renaming = renamedEvents.getRenameList();
+				for (int i = 1; i< renaming.size(); i++){
+					String rename = renaming.get(i);
+					if (notMatchedEvents.contains(rename) && !source.get(i).equals(rename))
+						return "Event " + rename + " already exists in problem machine";
+				}
 			}
-			
-			// check for event renaming that already exists in problem machine
-			Set<String> notMatchedEvents = new HashSet<String>();
-			for (IEvent evt : matchingPage.getMatching().getProblemElement().getEvents())
-				if (!PatternUtils.isInMatchings(null, evt, matchingPage.getMatching().getChildrenOfType(IEvent.ELEMENT_TYPE)))
-					notMatchedEvents.add(evt.getLabel());
-			for (String renaming : renamedEvents.getRenameList())
-				if (notMatchedEvents.contains(renaming))
-					return "Event " + renaming + " already exists in problem machine";
 			
 		} catch (RodinDBException e) {
 		}
@@ -566,16 +623,10 @@ public class RenamingWizardPage extends WizardPage {
 		return renamedVariables;
 	}
 
-	public IMachineRoot getPatternRefinmentMachine() {
-		return refMachineChooser.getElement();
-	}
-
+	
 	public Renaming<IEvent> getRenamingEvents() {
 		return renamedEvents;
 	}
 	
-	public ElementChooserViewer<IMachineRoot> getRefinementChooser() {
-		return refMachineChooser;
-	}
-
+	
 }
