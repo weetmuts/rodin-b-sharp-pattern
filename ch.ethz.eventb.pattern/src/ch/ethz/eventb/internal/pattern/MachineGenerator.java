@@ -212,7 +212,7 @@ public class MachineGenerator {
 		if (replacedVariables.size()>0)		
 			comment = comment.concat("\nvariable replacement:");
 		for (IVariable variable : replacedVariables)
-			comment = comment.concat("\n   " + variable.getIdentifierString() + " --> " + data.getReplacementFor(variable));
+			comment = comment.concat("\n   " + variable.getIdentifierString() + " --> " + data.getForwardReplacementFor(variable));
 		monitor.worked(1);
 		
 		generatedMachine.setComment(comment, null);
@@ -278,85 +278,64 @@ public class MachineGenerator {
 	}
 	
 	private void createInvariants(IProgressMonitor monitor) throws RodinDBException, DataException {
-				
-				
-		// copy abstract invariants
-//		try {
-//			invariants = matching.getPatternElement().getInvariants();
-//		} catch (RodinDBException e) {
-//			e.printStackTrace();
-//			return;
-//		}
-//		for (IInvariant invariant : invariants) {
-//			IInvariant newInvariant = refMachine.getInvariant("internal_invariant" + i);
-//			try {
-//				newInvariant.create(null, monitor);
-//				newInvariant.setLabel(prefix + (i++), monitor);
-//				newInvariant.setPredicateString(renameMatching(invariant.getPredicateString(), matchingVariables), monitor);
-//				newInvariant.setComment("Copy from pattern specification", monitor);
-//			} catch (RodinDBException e) {
-//				e.printStackTrace();
-//			}
-//		}
 		
-		// copy concrete invariants
 		invariantNumber = 1;
-		Collection<IVariable> variables;
-		IInvariant[] invariants;
-		IMachineRoot currentMachine = data.getPatternAbstractMachine();
-		IMachineRoot abstractMachine;
-		monitor.beginTask(null , data.getNumberOfRefinements());
+		
+		Collection<IVariable> newVariables = data.getNewPatternRefinementVariables();
+		Collection<IVariable> disappearingVariables = data.getDisappearingPatternVariables();
+		Collection<IVariable> remainingVariables = data.getRemainingPatternVariables();
+		
+		monitor.beginTask(null , newVariables.size() + disappearingVariables.size() + remainingVariables.size());
 		monitor.subTask("create invariants");
 		
-		while (!currentMachine.equals(data.getPatternRefinementMachine())) {
-			abstractMachine = currentMachine;
-			currentMachine = data.getRefinedMachineOf(currentMachine);
-			
-			variables = data.getNewVariablesOf(currentMachine);
-			variables.addAll(data.getDisappearingVariablesOf(abstractMachine));
-			invariants = currentMachine.getInvariants();
-			for (IInvariant invariant : invariants) {
-				if (EventBUtils.isRelevant(invariant, variables)) {
-					IInvariant newInvariant = generatedMachine.getInvariant(INVARIANT_PREFIX + invariantNumber);
-					newInvariant.create(null, null);
-					if (invariant.isTheorem()) {
-						newInvariant.setLabel(THEOREM_LABEL + invariantNumber++, null);
-						newInvariant.setTheorem(true, null);
-					}
-					else {
-						newInvariant.setLabel(INVARIANT_LABEL + invariantNumber++, null);
-						newInvariant.setTheorem(false, null);
-					}
-					String predicate = invariant.getPredicateString();
-					predicate = PatternUtils.substitute(predicate, problemMap, ff);
-					newInvariant.setPredicateString(predicate, null);
-					newInvariant.setComment("Copy from pattern refinement", null);
-				}
+		// create invariant for new variables
+		for (IVariable newVariable : newVariables) {
+			IInvariant newInvariant = generatedMachine.getInvariant(INVARIANT_PREFIX + invariantNumber);
+			newInvariant.create(null, null);
+			newInvariant.setLabel(INVARIANT_LABEL + invariantNumber++, null);
+			newInvariant.setTheorem(false, null);
+			String predicate = EventBUtils.getTypingTheorem(data.getPatternRefinementMachine(), newVariable.getIdentifierString());
+			predicate = PatternUtils.substitute(predicate, patternRefinementMap, ff);
+			newInvariant.setPredicateString(predicate, null);
+			newInvariant.setComment("Typing information for new variable", null);
+			monitor.worked(1);
+		}
+		
+		// create invariant for disappearing variables
+		for (IVariable disappearingVariable : disappearingVariables) {
+			String problemIdentifier = data.getMatchingOf(disappearingVariable).getIdentifierString();
+			String patternRenaming = disappearingVariable.getIdentifierString();
+			patternRenaming = PatternUtils.substitute(patternRenaming, intermediateMap, ff);
+			patternRenaming = PatternUtils.substitute(patternRenaming, patternRefinementMap, ff);
+			if (!problemIdentifier.equals(patternRenaming)) {
+				IInvariant newInvariant = generatedMachine.getInvariant(INVARIANT_PREFIX + invariantNumber);
+				newInvariant.create(null, null);
+				newInvariant.setLabel(INVARIANT_LABEL + invariantNumber++, null);
+				newInvariant.setTheorem(false, null);
+				String predicate = problemIdentifier + " = " + patternRenaming;
+				newInvariant.setPredicateString(predicate, null);
+				newInvariant.setComment("Linking for disappeared variable", null);
 			}
 			monitor.worked(1);
 		}
 		
-//		
-//		// create invariants for renamed not-replaced variables
-//		for (IVariable variable : variables) {
-//			// get renamed identifier of pattern variable
-//			String patternVariableRenamed = PatternUtils.substitute(variable.getIdentifierString(), patternRefinementMap, ff);
-//			// get identifier of matched problem variable
-//			String problemVariable = data.getMatchingOf(variable).getIdentifierString();
-//			
-//			// create linking invariant if the identifier are different
-//			if (!patternVariableRenamed.equals(problemVariable)) {
-//				IInvariant newInvariant = generatedMachine.getInvariant(INVARIANT_PREFIX + invariantNumber);
-//				newInvariant.create(null, null);
-//				newInvariant.setLabel(INVARIANT_LABEL + invariantNumber++, null);
-//				newInvariant.setTheorem(false, null);
-//				String predicate = problemVariable + " = " + patternVariableRenamed;
-//				newInvariant.setPredicateString(predicate, null);
-//				newInvariant.setComment("Created to link the renaming", null);
-//			}
-//			monitor.worked(1);
-//		}
-	
+		// create invariant for remaning variables
+		for (IVariable remainingVariable : remainingVariables) {
+			String problemIdentifier = data.getMatchingOf(remainingVariable).getIdentifierString();
+			String patternRenaming = remainingVariable.getIdentifierString();
+			patternRenaming = PatternUtils.substitute(patternRenaming, patternRefinementMap, ff);
+			if (!problemIdentifier.equals(patternRenaming)) {
+				IInvariant newInvariant = generatedMachine.getInvariant(INVARIANT_PREFIX + invariantNumber);
+				newInvariant.create(null, null);
+				newInvariant.setLabel(INVARIANT_LABEL + invariantNumber++, null);
+				newInvariant.setTheorem(false, null);
+				String predicate = problemIdentifier + " = " + patternRenaming;
+				newInvariant.setPredicateString(predicate, null);
+				newInvariant.setComment("Linking for disappeared variable", null);
+			}
+			monitor.worked(1);
+		}
+		
 		monitor.done();
 	
 	}
@@ -860,7 +839,7 @@ public class MachineGenerator {
 			tempMap.clear();
 			for (IVariable variable : data.getDisappearingVariablesOf(data.getAbstractMachineOf(refinement)))
 					tempMap.put(ff.makeFreeIdentifier(variable.getIdentifierString(), null),
-					data.getReplacementFor(variable));
+					data.getForwardReplacementFor(variable));
 			for (FreeIdentifier var : intermediateMap.keySet())
 				intermediateMap.put(var, intermediateMap.get(var).substituteFreeIdents(tempMap, ff));
 			refinement = data.getRefinedMachineOf(refinement);
@@ -868,8 +847,8 @@ public class MachineGenerator {
 		// once again for the pattern refinement machine
 		tempMap.clear();
 		for (IVariable variable : data.getDisappearingVariablesOf(data.getAbstractMachineOf(refinement)))
-				tempMap.put(ff.makeFreeIdentifier(variable.getIdentifierString(), null),
-				data.getReplacementFor(variable));
+			tempMap.put(ff.makeFreeIdentifier(variable.getIdentifierString(), null),
+				data.getForwardReplacementFor(variable));
 		for (FreeIdentifier var : intermediateMap.keySet())
 			intermediateMap.put(var, intermediateMap.get(var).substituteFreeIdents(tempMap, ff));
 		//monitor.worked(1);
