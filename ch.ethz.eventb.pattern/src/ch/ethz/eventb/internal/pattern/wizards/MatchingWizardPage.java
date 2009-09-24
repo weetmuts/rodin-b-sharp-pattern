@@ -253,8 +253,9 @@ public class MatchingWizardPage extends WizardPage {
 		data.loadMatching(matching);
 		variableGroup.setInput(matching);
 		eventGroup.setInput(matching);
-		this.carrierSetRenaming = carrierSetRenaming;
-		this.constantRenaming = constantRenaming;
+//		this.carrierSetRenaming = carrierSetRenaming;
+//		this.constantRenaming = constantRenaming;
+//		data.loadReplacement();
 		context.setInput(matching);
 		combo.setItems(comboContent.toArray(new String[comboContent.size()]));
 //		pageChanged.performAction();

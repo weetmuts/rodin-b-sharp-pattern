@@ -578,17 +578,29 @@ public class EventBUtils {
 	
 	public static boolean isRelevant(IInvariant inv, Collection<IVariable> variables)
 	throws RodinDBException {
+		Collection<String> idents = getFreeIdentifiers(inv);
+		// Remove the seen carrier sets and constants.
+		IMachineRoot mch = (IMachineRoot) inv.getRoot();
+		idents.removeAll(getSeenCarrierSetsAndConstants(mch));
+		
 		boolean result = false;
-		HashSet<String> set = new HashSet<String>();
 		for (IVariable variable : variables) {
-			set.clear();
-			set.add(variable.getIdentifierString());
-			result = isRelevant(inv, set);
+			result = idents.contains(variable.getIdentifierString());
 			if (result)
 				break;			
 		}
 		return result;
-}
+	}
+	
+	public static boolean isRelevant(IInvariant inv, IVariable variable)
+	throws RodinDBException {
+		Collection<String> idents = getFreeIdentifiers(inv);
+		// Remove the seen carrier sets and constants.
+		IMachineRoot mch = (IMachineRoot) inv.getRoot();
+		idents.removeAll(getSeenCarrierSetsAndConstants(mch));
+		
+		return idents.contains(variable.getIdentifierString());
+	}
 
 	// =========================================================================
 	// Events

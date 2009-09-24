@@ -7,15 +7,19 @@ import java.util.Collection;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.TextCellEditor;
+import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.wizard.WizardPage;
@@ -33,8 +37,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.TreeItem;
 import org.eventb.core.IEvent;
 import org.eventb.core.IEventBProject;
+import org.eventb.core.IInvariant;
 import org.eventb.core.IMachineRoot;
 import org.eventb.core.IParameter;
 import org.eventb.core.IVariable;
@@ -47,6 +53,7 @@ import org.rodinp.keyboard.RodinKeyboardPlugin;
 
 import ch.ethz.eventb.internal.pattern.Data;
 import ch.ethz.eventb.internal.pattern.DataException;
+import ch.ethz.eventb.internal.pattern.EventBUtils;
 import ch.ethz.eventb.internal.pattern.PatternUtils;
 
 
@@ -68,7 +75,9 @@ public class IncorporatingWizardPage extends WizardPage {
 
 	private Text textField;
 	
-	private TableViewer variables;
+	private TreeViewer variables;
+	
+//	private TreeViewer variables2;
 	
 	private TableViewer invariants;
 	
@@ -78,9 +87,13 @@ public class IncorporatingWizardPage extends WizardPage {
 	
 	private Collection<IVariable> disappeard;
 	
+	private Collection<IVariable> related;
+	
 	private Collection<IWitness> allWitnesses;
 	
 	private Renaming<IVariable> variableExtraction;
+	
+//	private Renaming<IVariable> variableExtraction2;
 	
 	private Renaming<IWitness> witnessExtraction;
 	
@@ -95,42 +108,33 @@ public class IncorporatingWizardPage extends WizardPage {
 	private RodinKeyboardPlugin keyboard = RodinKeyboardPlugin.getDefault();
 	
 	
-	/**
-	 * @author fuersta
-	 *         <p>
-	 *         A utility class for providing contents for the table viewer.
-	 *         </p>
-	 */
-	private class VariableContentProvider implements IStructuredContentProvider {
+	private class VariableContentProvider implements ITreeContentProvider {
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see
-		 * org.eclipse.jface.viewers.IStructuredContentProvider#getElements(
-		 * java.lang.Object)
-		 */
+		public Object[] getChildren(Object parentElement) {
+			try {
+				return data.getForwardDependentVariables((IVariable) parentElement).toArray();
+			} catch (DataException e) {
+				return new Object[0];
+			}
+		}
+
+		public Object getParent(Object element) {
+			return null;
+		}
+
+		public boolean hasChildren(Object element) {
+			try {
+				return data.getForwardDependentVariables((IVariable) element).size()>0;
+			} catch (DataException e) {
+				return false;
+			}
+		}
+
 		public Object[] getElements(Object inputElement) {
 			
-			varGroup = (MatchingGroup<IVariable>)inputElement;
-//			IVariable[] refinementVariables = new IVariable[0];
-//			if (mergingPage.getPatternRefinmentMachine() != null) {
-//				try {
-//					refinementVariables = mergingPage.getPatternRefinmentMachine().getVariables();
-//				} catch (RodinDBException e) {
-//				}
-//			}
-//			Collection<IVariable> result = new ArrayList<IVariable>();
-//			if (varGroup != null) {
-//				for (Matching<IVariable> matching : varGroup.getMatchings()) 
-//					if (!PatternUtils.isInArray(matching.getPatternID(), refinementVariables))
-//						result.add(matching.getPatternElement());
-//			}
-//			disappeard = result;
-//			return result.toArray();
 			try {
-				disappeard = data.getDisappearingPatternVariables();
-				disappeard.addAll(data.getDisappearingVariablesOfAllIntermediateMachines());
+				
+				disappeard = data.getDisappearingPatternVariablesAtLocation();
 				return disappeard.toArray();
 			}
 			catch (DataException e) {
@@ -138,28 +142,64 @@ public class IncorporatingWizardPage extends WizardPage {
 			}
 			
 		}
-	
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see org.eclipse.jface.viewers.IContentProvider#dispose()
-		 */
 		public void dispose() {
-
+			varGroup = null;
+			
 		}
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see
-		 * org.eclipse.jface.viewers.IContentProvider#inputChanged(org.eclipse
-		 * .jface.viewers.Viewer, java.lang.Object, java.lang.Object)
-		 */
 		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+			varGroup = null;
+			
+		}
+		
+	}
+	
+	private class VariableContentProvider2 implements ITreeContentProvider {
 
+		public Object[] getChildren(Object parentElement) {
+			try {
+				return data.getBackwardDependentVariables((IVariable) parentElement).toArray();
+			} catch (DataException e) {
+				return new Object[0];
+			}
 		}
 
+		public Object getParent(Object element) {
+			return null;
+		}
+
+		public boolean hasChildren(Object element) {
+			try {
+				return data.getBackwardDependentVariables((IVariable) element).size()>0;
+			} catch (DataException e) {
+				return false;
+			}
+		}
+
+		public Object[] getElements(Object inputElement) {
+			
+			try {
+				
+				related = data.getRelatedPatternVariables();
+				return related.toArray();
+			}
+			catch (DataException e) {
+				return new Object[0];
+			}
+			
+		}
+
+		public void dispose() {
+			varGroup = null;
+			
+		}
+
+		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+			varGroup = null;
+			
+		}
+		
 	}
 	
 	/**
@@ -242,12 +282,20 @@ public class IncorporatingWizardPage extends WizardPage {
 		 * java.lang.Object)
 		 */
 		public Object[] getElements(Object inputElement) {
-			Assert.isTrue(inputElement instanceof IMachineRoot);
+			
+			Assert.isTrue(inputElement instanceof IVariable);
+			
+			IMachineRoot machine;
+			Collection<IInvariant> result = new ArrayList<IInvariant>();
+			
 			try {
-				return ((IMachineRoot)inputElement).getInvariants();
-			} catch (RodinDBException e) {
+				machine = data.getMachineAfterDisappearingOf(((IVariable)inputElement).getIdentifierString());
+				for (IInvariant invariant : machine.getInvariants())
+					if (EventBUtils.isRelevant(invariant, (IVariable) inputElement))
+						result.add(invariant);
 			}
-			return new Object[0];
+			catch (Exception e) {}
+			return result.toArray();
 		}
 
 
@@ -344,8 +392,8 @@ public class IncorporatingWizardPage extends WizardPage {
 		mergingPage.getRefinementChooser().addSelectionChangedListener(new ISelectionChangedListener() {
 
 			public void selectionChanged(SelectionChangedEvent event) {
-				invariants.setInput(mergingPage.getPatternRefinmentMachine());
 				variables.setInput(matchingPage.getVariableGroup());
+//				variables2.setInput(matchingPage.getVariableGroup());
 				witnesses.setInput(mergingPage.getPatternRefinmentMachine());
 				variableExtraction = new Renaming<IVariable>();
 				witnessExtraction = new Renaming<IWitness>();
@@ -374,25 +422,26 @@ public class IncorporatingWizardPage extends WizardPage {
 		variableGroup.setLayoutData(gd);
 		variableGroup.setLayout(gl);
 		
-		variables = new TableViewer(variableGroup, SWT.NULL);
+		variables = new TreeViewer(variableGroup, SWT.NULL);
 		
 		variables.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
 										
 		variables.setContentProvider(new VariableContentProvider());
 		
-				
-		final MatchingGroup<IVariable> varGroup = matchingPage.getVariableGroup();
-		varGroup.getActionPerformer().addListener(new ActionListener(){
+		variables.setAutoExpandLevel(TreeViewer.ALL_LEVELS);
+		
+		variables.addSelectionChangedListener(new ISelectionChangedListener() {
 
-			public void actionPerformed(ActionEvent e) {
-				variables.setInput(matchingPage.getVariableGroup());
-				variableMatching = matchingPage.getMatching().getChildrenOfType(IVariable.ELEMENT_TYPE);
-				project = matchingPage.getMatching().getProblemElement().getEventBProject();
-				variableExtraction = new Renaming<IVariable>();
-				updateStatus(null);
-				return;
+			public void selectionChanged(SelectionChangedEvent event) {
 				
-			}});
+				TreeItem[] sel = variables.getTree().getSelection();
+				if (sel.length == 1)
+					invariants.setInput(sel[0].getData());
+			}
+			
+		});
+		
+				
 		
 		matchingPage.getProblemGroup().getMachineChooser().addSelectionChangedListener(new ISelectionChangedListener(){
 
@@ -406,7 +455,7 @@ public class IncorporatingWizardPage extends WizardPage {
 		});
 
 		
-		final TableViewerColumn originalVariables = new TableViewerColumn(variables,SWT.NONE);
+		final TreeViewerColumn originalVariables = new TreeViewerColumn(variables,SWT.NONE);
 		originalVariables.getColumn().setWidth(100);
 		originalVariables.setLabelProvider(new CellLabelProvider(){
 		    @Override
@@ -417,12 +466,16 @@ public class IncorporatingWizardPage extends WizardPage {
 
 		});
 		
-		final TableViewerColumn extractedVars = new TableViewerColumn(variables,SWT.NONE);
+		final TreeViewerColumn extractedVars = new TreeViewerColumn(variables,SWT.NONE);
 		extractedVars.getColumn().setWidth(100);
 		extractedVars.setLabelProvider(new CellLabelProvider(){
 		    @Override
 		    public void update(ViewerCell cell) {
-		    	cell.setText(variableExtraction.getRenamingOfElement((IVariable)cell.getElement()));
+		    	try {
+		    		cell.setText(data.getForwardReplacementFor((IVariable)cell.getElement()).toString());
+				} catch (Exception e) {
+					cell.setText("error");
+				}
 		    	updateStatus(null);
 			}
 
@@ -437,12 +490,16 @@ public class IncorporatingWizardPage extends WizardPage {
 
 		    @Override
 		    protected CellEditor getCellEditor(Object element) {
-		        return new TextCellEditor(variables.getTable());
+		        return new TextCellEditor(variables.getTree());
 		    }
 
 		    @Override
 		    protected Object getValue(Object element) {
-		        return variableExtraction.getRenamingOfElement((IVariable)element);
+		    	try {
+		    		return data.getForwardReplacementFor((IVariable)element).toString();
+				} catch (Exception e) {
+					return "";
+				}
 		    }
 
 		    @Override
@@ -455,8 +512,10 @@ public class IncorporatingWizardPage extends WizardPage {
 		    	else 
 		    		variableExtraction.addPair((IVariable)element, value.toString());
 		    	try {
-					data.updateReplacementOf((IVariable)element, value.toString());
-				} catch (Exception e) {}
+					data.updateForwardReplacementOf((IVariable)element, value.toString());
+				} catch (Exception e) {
+					MessageDialog.openError(getShell(), "Error", e.getMessage());
+				}
 		    	variables.setInput(matchingPage.getVariableGroup());
 		    }
 
@@ -466,7 +525,7 @@ public class IncorporatingWizardPage extends WizardPage {
 
 			@Override
 			public void controlResized(ControlEvent e) {
-				int width = variables.getTable().getSize().x;
+				int width = variables.getTree().getSize().x;
 				originalVariables.getColumn().setWidth(width/2);
 				extractedVars.getColumn().setWidth(width/2);
 				super.controlResized(e);
@@ -475,9 +534,115 @@ public class IncorporatingWizardPage extends WizardPage {
 		});
 		
 		
+//		// Table viewer of the matching
+//		Group variableGroup2 = new Group(container,SWT.NULL);
+//		variableGroup2.setText("Replacement for the new variables");
+//		gd = new GridData(GridData.FILL_BOTH);
+//		gd.horizontalSpan = 2;
+//		variableGroup2.setLayoutData(gd);
+//		variableGroup2.setLayout(gl);
+//		
+//		variables2 = new TreeViewer(variableGroup2, SWT.NULL);
+//		
+//		variables2.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
+//										
+//		variables2.setContentProvider(new VariableContentProvider2());
+//		
+//		variables2.setAutoExpandLevel(TreeViewer.ALL_LEVELS);
+//		
+//		final TreeViewerColumn originalVariables2 = new TreeViewerColumn(variables2,SWT.NONE);
+//		originalVariables2.getColumn().setWidth(100);
+//		originalVariables2.setLabelProvider(new CellLabelProvider(){
+//		    @Override
+//		    public void update(ViewerCell cell) {
+//		    	cell.setText(PatternUtils.getDisplayText(cell.getElement()));
+//		       
+//		    }
+//
+//		});
+//		
+//		final TreeViewerColumn extractedVars2 = new TreeViewerColumn(variables2,SWT.NONE);
+//		extractedVars2.getColumn().setWidth(100);
+//		extractedVars2.setLabelProvider(new CellLabelProvider(){
+//		    @Override
+//		    public void update(ViewerCell cell) {
+//		    	try {
+//		    		cell.setText(data.getBackwardReplacementFor((IVariable)cell.getElement()).toString());
+//				} catch (Exception e) {
+//					cell.setText("error");
+//				}
+//		    	updateStatus(null);
+//			}
+//
+//		});
+//		
+//		extractedVars2.setEditingSupport(new EditingSupport(variables2) {
+//
+//		    @Override
+//		    protected boolean canEdit(Object element) {
+//		     	return true;
+//		    }
+//
+//		    @Override
+//		    protected CellEditor getCellEditor(Object element) {
+//		        return new TextCellEditor(variables2.getTree());
+//		    }
+//
+//		    @Override
+//		    protected Object getValue(Object element) {
+//		    	try {
+//		    		return data.getBackwardReplacementFor((IVariable)element).toString();
+//				} catch (Exception e) {
+//					return "";
+//				}
+//		    }
+//
+//		    @Override
+//		    protected void setValue(Object element, Object value) {
+//		    	String translateStr = keyboard.translate(value.toString());
+//				if (!value.toString().equals(translateStr))
+//					value = translateStr;
+//		    	try {
+//		    		data.updateBackwardReplacementOf((IVariable)element, value.toString());
+//				} catch (Exception e) {
+//					MessageDialog.openError(getShell(), "Error", e.getMessage());
+//				}
+//		    	variables2.setInput(matchingPage.getVariableGroup());
+//		    }
+//
+//		});
+//		
+//		variableGroup2.addControlListener(new ControlAdapter() {
+//
+//			@Override
+//			public void controlResized(ControlEvent e) {
+//				int width = variables2.getTree().getSize().x;
+//				originalVariables2.getColumn().setWidth(width/2);
+//				extractedVars2.getColumn().setWidth(width/2);
+//				super.controlResized(e);
+//			}
+//			
+//		});
+//		
+//		final MatchingGroup<IVariable> varGroup = matchingPage.getVariableGroup();
+//		varGroup.getActionPerformer().addListener(new ActionListener(){
+//
+//			public void actionPerformed(ActionEvent e) {
+//				variables.setInput(matchingPage.getVariableGroup());
+//				variables2.setInput(matchingPage.getVariableGroup());
+//				variableMatching = matchingPage.getMatching().getChildrenOfType(IVariable.ELEMENT_TYPE);
+//				project = matchingPage.getMatching().getProblemElement().getEventBProject();
+//				variableExtraction = new Renaming<IVariable>();
+//				updateStatus(null);
+//				return;
+//				
+//			}});
+//		
+		
+		
 		// Table viewer of the matching
 		Group witnessGroup = new Group(container,SWT.NULL);
-		witnessGroup.setText("Replacement for the witnesses");
+		witnessGroup.setText("Typing for the witnesses");
 		gd = new GridData(GridData.FILL_BOTH);
 		gd.horizontalSpan = 2;
 		witnessGroup.setLayoutData(gd);

@@ -5,12 +5,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eventb.core.IAction;
 import org.eventb.core.ICarrierSet;
 import org.eventb.core.IConstant;
 import org.eventb.core.IEvent;
 import org.eventb.core.IEventBProject;
 import org.eventb.core.IGuard;
+import org.eventb.core.IInvariant;
 import org.eventb.core.IMachineRoot;
 import org.eventb.core.IParameter;
 import org.eventb.core.IRefinesEvent;
@@ -22,6 +24,7 @@ import org.eventb.core.ast.FormulaFactory;
 import org.eventb.core.ast.FreeIdentifier;
 import org.eventb.core.ast.LanguageVersion;
 import org.eventb.core.ast.Predicate;
+import org.omg.CosNaming.NamingContextExtPackage.AddressHelper;
 import org.rodinp.core.IRodinElement;
 import org.rodinp.core.IRodinProject;
 import org.rodinp.core.RodinDBException;
@@ -29,6 +32,7 @@ import org.rodinp.core.RodinDBException;
 import ch.ethz.eventb.internal.pattern.wizards.ComplexMatching;
 import ch.ethz.eventb.internal.pattern.wizards.Matching;
 import ch.ethz.eventb.internal.pattern.wizards.MatchingMachine;
+import ch.ethz.eventb.internal.pattern.wizards.Renaming;
 
 /**
  * Data class where all the necessary information for applying patterns is stored.
@@ -37,7 +41,9 @@ import ch.ethz.eventb.internal.pattern.wizards.MatchingMachine;
  */
 public class Data {
 	
-	FormulaFactory ff;
+	private FormulaFactory ff;
+	
+	private Expression defaultExpression;
 	
 	// pattern
 	private IMachineRoot patternAbstractMachine;
@@ -56,7 +62,13 @@ public class Data {
 	
 	private Collection<IVariable> disappearingPatternVariables;
 	
+	private Collection<IVariable> newPatternRefinementVariables;
+	
 	private Collection<IVariable> remainingPatternVariables;
+	
+	private HashMap<String, IVariable> variableRemainings;
+	
+	private HashMap<String, IVariable> variablesEntries;
 		
 	// pattern refinement
 	private IMachineRoot patternRefinementMachine;
@@ -99,6 +111,10 @@ public class Data {
 	
 	private HashMap<IMachineRoot, Collection<IVariable>> intermediateDisappearingVariables;
 	
+	private HashMap<String, IVariable> variableAppearing;
+	
+	private HashMap<String, IVariable> variableDisappearing;
+	
 	private HashMap<IMachineRoot, IMachineRoot> refinement;
 	
 	private HashMap<IMachineRoot, IMachineRoot> abstraction;
@@ -111,6 +127,13 @@ public class Data {
 	
 	private HashMap<IEvent, HashSet<IEvent>> allChains;
 	
+	private HashMap<IMachineRoot, Collection<IInvariant>> relevantInvariants;
+	
+	private Collection<IVariable> relatedVariables;
+	
+	private HashMap<IMachineRoot, Integer> machineRank;
+	
+
 	// parameters
 	private HashMap<IEvent, Collection<IParameter>> allPatternParameters;
 	
@@ -167,8 +190,14 @@ public class Data {
 	private HashMap<IEvent, String> newEventRenaming;
 	
 	private HashMap<Pair<IEvent, IEvent>, String> matchedEventRenaming;
+		
+	private HashMap<IVariable, Collection<IVariable>> forwardDependencies;
 	
-	private HashMap<IVariable, Expression> variableReplacement;
+	private HashMap<IVariable, Collection<IVariable>> backwardDependencies;
+	
+	private HashMap<IVariable, Expression> variableForwardReplacement;
+	
+	private HashMap<IVariable, Expression> variableBackwardReplacement;
 	
 	private HashMap<IWitness, Expression> parameterReplacement;
 	
@@ -182,6 +211,7 @@ public class Data {
 	public Data() {
 		
 		ff = FormulaFactory.getDefault();
+		defaultExpression = ff.makeFreeIdentifier("error", null);
 		
 		// initialize the fields
 		
@@ -192,7 +222,10 @@ public class Data {
 		matchedPatternVariables = new ArrayList<IVariable>();
 		notMatchedPatternVariables = new ArrayList<IVariable>();
 		disappearingPatternVariables = new HashSet<IVariable>();
+		newPatternRefinementVariables = new HashSet<IVariable>();
 		remainingPatternVariables = new HashSet<IVariable>();
+		variableRemainings = new HashMap<String, IVariable>();
+		variablesEntries = new HashMap<String, IVariable>();
 		allPatternRefinementEvents = new HashSet<IEvent>();
 		newPatternRefinementEvents = new HashSet<IEvent>();
 		refinedPatternRefinementEvents = new HashSet<IEvent>();
@@ -210,12 +243,17 @@ public class Data {
 		intermediatePatternMachines = new HashSet<IMachineRoot>();
 		intermediateNewVariables = new HashMap<IMachineRoot, Collection<IVariable>>();
 		intermediateDisappearingVariables = new HashMap<IMachineRoot, Collection<IVariable>>();
+		variableAppearing = new HashMap<String, IVariable>();
+		variableDisappearing = new HashMap<String, IVariable>();
 		refinement = new HashMap<IMachineRoot, IMachineRoot>();
 		abstraction = new HashMap<IMachineRoot, IMachineRoot>();
 		eventRefinement = new HashMap<IEvent, Collection<IEvent>>();
 		eventAbstraction = new HashMap<IEvent, Collection<IEvent>>();
 		chainDown = new HashMap<IEvent, HashMap<IEvent,IEvent>>();
 		allChains = new HashMap<IEvent, HashSet<IEvent>>();
+		relevantInvariants = new HashMap<IMachineRoot, Collection<IInvariant>>();
+		relatedVariables = new HashSet<IVariable>();
+		machineRank = new HashMap<IMachineRoot, Integer>();
 		
 		allPatternParameters = new HashMap<IEvent, Collection<IParameter>>();
 		allProblemParameters = new HashMap<IEvent, Collection<IParameter>>();
@@ -243,7 +281,10 @@ public class Data {
 		mergedEventRenaming = new HashMap<IEvent, String>();
 		newEventRenaming = new HashMap<IEvent, String>();
 		matchedEventRenaming = new HashMap<Pair<IEvent,IEvent>, String>();
-		variableReplacement = new HashMap<IVariable, Expression>();
+		forwardDependencies = new HashMap<IVariable, Collection<IVariable>>();
+		backwardDependencies = new HashMap<IVariable, Collection<IVariable>>();
+		variableForwardReplacement = new HashMap<IVariable, Expression>();
+		variableBackwardReplacement = new HashMap<IVariable, Expression>();
 		parameterReplacement = new HashMap<IWitness, Expression>();
 			
 		eventMerging = new HashMap<IEvent, Collection<IEvent>>();
@@ -265,6 +306,8 @@ public class Data {
 			
 			// set given machine locally
 			this.patternAbstractMachine = patternAbstractMachine;
+			
+			machineRank.put(patternAbstractMachine, 0);
 			
 			
 			// clear sub-matchings
@@ -319,7 +362,15 @@ public class Data {
 			
 			// clear dependent data
 			disappearingPatternVariables.clear();
+			newPatternRefinementVariables.clear();
 			remainingPatternVariables.clear();
+			variableRemainings.clear();
+			
+			
+			variablesEntries.clear();
+			variablesEntries.clear();
+			for (IVariable variable : allPatternVariables)
+				variablesEntries.put(variable.getIdentifierString(), variable);
 			
 			
 			
@@ -487,6 +538,8 @@ public class Data {
 				abstraction.put(currentMachine, abstractMachine);
 				
 				for (IEvent refinementEvent : currentMachine.getEvents()) {
+					if (refinementEvent.isExtended())
+						PatternUtils.unsetExtended(refinementEvent);
 					eventAbstraction.put(refinementEvent, new HashSet<IEvent>());
 					if (refinementEvent.isInitialisation()) {
 						IEvent abstractEvent = PatternUtils.getElementByLabel(IEvent.ELEMENT_TYPE, IEvent.INITIALISATION, abstractMachine);
@@ -563,8 +616,14 @@ public class Data {
 			matchedEventRenaming.clear();
 			
 			// initialize replacements
-			variableReplacement.clear();
+			variableForwardReplacement.clear();
+			variableBackwardReplacement.clear();
+			forwardDependencies.clear();
+			backwardDependencies.clear();
 			parameterReplacement.clear();
+			variableAppearing.clear();
+			variableDisappearing.clear();
+			
 			
 			// PATTERN
 			
@@ -575,10 +634,24 @@ public class Data {
 				IVariable patternVariable = PatternUtils.getElementByIdentifier(IVariable.ELEMENT_TYPE, patternRefinementVariable.getIdentifierString(), patternAbstractMachine);
 				disappearingPatternVariables.remove(patternVariable);
 			}
+			
+			newPatternRefinementVariables.clear();
+			newPatternRefinementVariables.addAll(allPatternRefinementVariables);
+			for (IVariable patternVariable: allPatternVariables) {
+				IVariable patternRefinementVariable = PatternUtils.getElementByIdentifier(IVariable.ELEMENT_TYPE, patternVariable.getIdentifierString(), patternRefinementMachine);
+				newPatternRefinementVariables.remove(patternRefinementVariable);
+			}
+			
 			remainingPatternVariables.clear();
 			remainingPatternVariables.addAll(allPatternVariables);
 			remainingPatternVariables.removeAll(disappearingPatternVariables);
 			
+			
+			
+			
+			variableRemainings.clear();
+			for (IVariable variable : allPatternRefinementVariables)
+				variableRemainings.put(variable.getIdentifierString(), variable);
 			
 			// PROBLEM
 			
@@ -597,25 +670,82 @@ public class Data {
 			// PATTERN INSIDE
 			
 			// calculate new and disappearing variables of intermediate machines
-			IMachineRoot current = refinement.get(patternAbstractMachine);
-			while (!current.equals(patternRefinementMachine)) {
+			currentMachine = patternAbstractMachine;
+			// once for abstract pattern machine
+			{
 				Collection<IVariable> newVariables = new HashSet<IVariable>();
-				intermediateNewVariables.put(current, newVariables);
-				for (IVariable variable : current.getVariables())
+				intermediateNewVariables.put(currentMachine, newVariables);
+				for (IVariable variable : currentMachine.getVariables())
 					newVariables.add(variable);
-				for (IVariable abstractVariable: abstraction.get(current).getVariables()) {
-					IVariable currentVariable = PatternUtils.getElementByIdentifier(IVariable.ELEMENT_TYPE, abstractVariable.getIdentifierString(), current);
-					newVariables.remove(currentVariable);
-				}
 				Collection<IVariable> disappearingVariables = new HashSet<IVariable>(newVariables);
-				intermediateDisappearingVariables.put(current, disappearingVariables);
-				for (IVariable patternRefinementVariable: allPatternRefinementVariables) {
-					IVariable patternVariable = PatternUtils.getElementByIdentifier(IVariable.ELEMENT_TYPE, patternRefinementVariable.getIdentifierString(), current);
-					disappearingVariables.remove(patternVariable);
+				intermediateDisappearingVariables.put(currentMachine, disappearingVariables);
+				for (IVariable refinementVariable: refinement.get(currentMachine).getVariables()) {
+					IVariable currentVariable = PatternUtils.getElementByIdentifier(IVariable.ELEMENT_TYPE, refinementVariable.getIdentifierString(), currentMachine);
+					disappearingVariables.remove(currentVariable);
 				}
-				current = refinement.get(current);
+				
+				for (IVariable variable : newVariables)
+					variableAppearing.put(variable.getIdentifierString(), variable);
+				for (IVariable variable : disappearingVariables)
+					variableDisappearing.put(variable.getIdentifierString(), variable);
+				
+				currentMachine = refinement.get(currentMachine);
 			}
 			
+			
+			
+			while (!currentMachine.equals(patternRefinementMachine)) {
+				
+				Collection<IVariable> newVariables = new HashSet<IVariable>();
+				intermediateNewVariables.put(currentMachine, newVariables);
+				for (IVariable variable : currentMachine.getVariables())
+					newVariables.add(variable);
+				Collection<IVariable> disappearingVariables = new HashSet<IVariable>(newVariables);
+				for (IVariable abstractVariable: abstraction.get(currentMachine).getVariables()) {
+					IVariable currentVariable = PatternUtils.getElementByIdentifier(IVariable.ELEMENT_TYPE, abstractVariable.getIdentifierString(), currentMachine);
+					newVariables.remove(currentVariable);
+				}
+				
+				intermediateDisappearingVariables.put(currentMachine, disappearingVariables);
+				for (IVariable refinementVariable: refinement.get(currentMachine).getVariables()) {
+					IVariable currentVariable = PatternUtils.getElementByIdentifier(IVariable.ELEMENT_TYPE, refinementVariable.getIdentifierString(), currentMachine);
+					disappearingVariables.remove(currentVariable);
+				}
+				
+				for (IVariable variable : newVariables)
+					variableAppearing.put(variable.getIdentifierString(), variable);
+				for (IVariable variable : disappearingVariables)
+					variableDisappearing.put(variable.getIdentifierString(), variable);
+				
+				currentMachine = refinement.get(currentMachine);
+				
+			}
+			
+			// once for the pattern refinement machine
+			{
+				
+				Collection<IVariable> newVariables = new HashSet<IVariable>();
+				intermediateNewVariables.put(currentMachine, newVariables);
+				for (IVariable variable : currentMachine.getVariables())
+					newVariables.add(variable);
+				Collection<IVariable> disappearingVariables = new HashSet<IVariable>(newVariables);
+				for (IVariable abstractVariable: abstraction.get(currentMachine).getVariables()) {
+					IVariable currentVariable = PatternUtils.getElementByIdentifier(IVariable.ELEMENT_TYPE, abstractVariable.getIdentifierString(), currentMachine);
+					newVariables.remove(currentVariable);
+				}
+				
+				intermediateDisappearingVariables.put(currentMachine, disappearingVariables);
+				
+				
+				for (IVariable variable : newVariables)
+					variableAppearing.put(variable.getIdentifierString(), variable);
+				for (IVariable variable : disappearingVariables)
+					variableDisappearing.put(variable.getIdentifierString(), variable);
+				
+								
+			}
+			
+						
 			HashMap<IEvent, Collection<IEvent>> reachable = new HashMap<IEvent, Collection<IEvent>>();
 			HashMap<IEvent, Collection<IEvent>> usedFor = new HashMap<IEvent, Collection<IEvent>>();
 			HashMap<IEvent, Integer> weight = new HashMap<IEvent, Integer>();
@@ -739,9 +869,52 @@ public class Data {
 			}
 			
 			// collect the relevant parameters
-			for (IEvent patternEvent: matchedPatternEvents)
+			for (IEvent patternEvent: getMatchedPatternEvents())
 				collectRelevantParameters(patternEvent, getMatchedParametersOf(patternEvent));
 		
+			// collect relevant invariants
+			relevantInvariants.clear();
+			relatedVariables.clear();
+			
+			currentMachine = patternAbstractMachine;
+			int rank = 1;
+			while (!currentMachine.equals(patternRefinementMachine)) {
+				abstractMachine = currentMachine;
+				currentMachine = refinement.get(currentMachine);
+				// set rank of current machine
+				machineRank.put(currentMachine, rank++);
+				
+				Collection<IInvariant> relevantInvs = new HashSet<IInvariant>();
+				relevantInvariants.put(currentMachine, relevantInvs);
+				// collect all new variables of the current machine that still exist in the refinement machine
+				Collection<IVariable> relevantVariables = new HashSet<IVariable>();
+				Collection<IVariable> newVariables = getNewVariablesOf(currentMachine);
+				for (IVariable variable : allPatternRefinementVariables) {
+					IVariable var = PatternUtils.getElementByIdentifier(IVariable.ELEMENT_TYPE, variable.getIdentifierString(), currentMachine);
+					if (var != null && newVariables.contains(var))
+						relevantVariables.add(var);
+				}
+				// for all invariants of the current machine		
+				for (IInvariant invariant : currentMachine.getInvariants()) {
+					// check if it includes relevant variables of the current machine
+					if (EventBUtils.isRelevant(invariant, relevantVariables)){
+						relevantInvs.add(invariant);
+						// check for variables
+						for (FreeIdentifier identifier : 
+							ff.parsePredicate(invariant.getPredicateString(), LanguageVersion.LATEST, null).getParsedPredicate().getFreeIdentifiers()) {
+							IVariable variable = variableAppearing.get(identifier.getName());
+							if (variable == null)
+								throw new DataException("Variable in invariant does not exist.");
+							if (variableRemainings.containsKey(identifier.getName()))
+									continue;
+							if (!variablesEntries.containsKey(identifier.getName()))
+								relatedVariables.add(variable);
+								
+						}
+					}
+				}
+				
+			}
 		}
 		catch (RodinDBException e) {
 			// error occurred
@@ -1825,7 +1998,55 @@ public class Data {
 	 * @param replacement of the variable
 	 * @throws DataException
 	 */
-	public void updateReplacementOf(IVariable variable, String replacement) throws DataException {
+	public void updateForwardReplacementOf(IVariable variable, String replacement) throws DataException {
+
+		// machine has to be initialized
+		if (patternRefinementMachine == null)
+			throw new DataException("Machine not yet initialized.");
+		
+		// validate input
+		if (variable == null || replacement == null || replacement.equals(""))
+			throw new DataException("One of the inputs is invalid.");
+		
+		// only replace new pattern variables
+		if (!disappearingPatternVariables.contains(variable)){
+			IMachineRoot parent = (IMachineRoot)variable.getParent();
+			Collection<IVariable> disappearingVariables = intermediateDisappearingVariables.get(parent);
+			if (disappearingVariables == null || !disappearingVariables.contains(variable))
+				throw new DataException("Variable has to be a disappearing pattern variable.");
+		}
+		
+		// get variable at disappearing location
+		try {
+			variable = variableDisappearing.get(variable.getIdentifierString());
+		} catch (RodinDBException e) {
+			throw new DataException("Error occurred while getting variable at disappearing location.");
+		}
+		
+		// parse expression
+		Expression expression = ff.parseExpression(replacement, LanguageVersion.LATEST, null).getParsedExpression();
+		if (expression == null)
+			throw new DataException("Given replacement is not an expression.");
+		if(!forwardDependencies.containsKey(variable))
+			forwardDependencies.put(variable, new HashSet<IVariable>());
+		Collection<IVariable> dependencies = forwardDependencies.get(variable);
+		dependencies.clear();
+		for (FreeIdentifier identifier : expression.getFreeIdentifiers()) {
+			IVariable var = variableDisappearing.get(identifier.getName());
+			if (var == null)
+				throw new DataException("Identifier in given replacement does not exist in further refinements.");
+			if (!isNewerThan(variable, var))
+				throw new DataException("Identifier in given replacement appears before or within the current machine.");
+			if (!variableRemainings.containsKey(identifier.getName()))
+				dependencies.add(var);
+				
+		}
+		variableForwardReplacement.put(variable, expression);
+		
+		
+	}
+	
+	public void updateBackwardReplacementOf(IVariable variable, String replacement) throws DataException {
 
 		// machine has to be initialized
 		if (patternRefinementMachine == null)
@@ -1836,19 +2057,33 @@ public class Data {
 			throw new DataException("One of the inputs is invalid.");
 		
 		// only replace disappearing pattern variables
-		if (!disappearingPatternVariables.contains(variable)){
+		if (!newPatternRefinementVariables.contains(variable)){
 			IMachineRoot parent = (IMachineRoot)variable.getParent();
-			Collection<IVariable> disappearingVariables = intermediateDisappearingVariables.get(parent);
-			if (disappearingVariables == null || !disappearingVariables.contains(variable))
-				throw new DataException("Variable has to be a disappearing pattern variable.");
+			Collection<IVariable> newVariables = intermediateNewVariables.get(parent);
+			if (newVariables == null || !newVariables.contains(variable))
+				throw new DataException("Variable has to be a new pattern refinement variable.");
 		}
 		
 		// parse expression
 		Expression expression = ff.parseExpression(replacement, LanguageVersion.LATEST, null).getParsedExpression();
+		
 		if (expression == null)
 			throw new DataException("Given replacement is not an expression.");
-			
-		variableReplacement.put(variable, expression);
+		if(!backwardDependencies.containsKey(variable))
+			backwardDependencies.put(variable, new HashSet<IVariable>());
+		Collection<IVariable> dependencies = backwardDependencies.get(variable);
+		dependencies.clear();
+		for (FreeIdentifier identifier : expression.getFreeIdentifiers()) {
+			IVariable var = variableAppearing.get(identifier.getName());
+			if (var == null)
+				throw new DataException("Identifier in given replacement does not exist in further refinements.");
+			if (!isNewerThan(var, variable))
+				throw new DataException("Identifier in given replacement appears before or within the current machine.");
+			if (!variablesEntries.containsKey(identifier.getName()))
+				dependencies.add(var);
+		}
+		variableBackwardReplacement.put(variable, expression);
+		
 		
 	}
 	
@@ -2179,6 +2414,40 @@ public class Data {
 		if (patternRefinementMachine == null)
 			throw new DataException("Pattern refinement machine not yet initialized");
 		return new HashSet<IVariable>(disappearingPatternVariables);
+		
+	}
+	
+	public Collection<IVariable> getDisappearingPatternVariablesAtLocation() throws DataException {
+
+		// check initialization
+		if (patternRefinementMachine == null)
+			throw new DataException("Pattern refinement machine not yet initialized");
+		Collection<IVariable> result = new HashSet<IVariable>();
+		for (IVariable variable : disappearingPatternVariables)
+			try {
+				result.add(variableDisappearing.get(variable.getIdentifierString()));
+			} catch (RodinDBException e) {
+				throw new DataException("Error occurred while getting variable at disappearing location.");
+			}
+		return result;
+		
+	}
+	
+	public Collection<IVariable> getNewPatternRefinementVariables() throws DataException {
+
+		// check initialization
+		if (patternRefinementMachine == null)
+			throw new DataException("Pattern refinement machine not yet initialized");
+		return new HashSet<IVariable>(newPatternRefinementVariables);
+		
+	}
+	
+	public Collection<IVariable> getRelatedPatternVariables() throws DataException {
+
+		// check initialization
+		if (patternRefinementMachine == null)
+			throw new DataException("Pattern refinement machine not yet initialized");
+		return new HashSet<IVariable>(relatedVariables);
 		
 	}
 	
@@ -2846,7 +3115,7 @@ public class Data {
 	 * @return the replacement expression for the given variable.
 	 * @throws DataException
 	 */
-	public Expression getReplacementFor(IVariable variable) throws DataException {
+	public Expression getForwardReplacementFor(IVariable variable) throws DataException {
 
 		// input validation
 		if (variable == null || !variable.exists())
@@ -2854,12 +3123,32 @@ public class Data {
 		// check initialization
 		if (patternRefinementMachine == null)
 			throw new DataException("Pattern refinement machine not yet initialized");
-		return variableReplacement.get(variable);
+		Expression result = variableForwardReplacement.get(variable);
+		if (result  == null)
+			return defaultExpression;
+		return result;
 		
 	}
 	
 	/**
-	 * @return all variables for which a replacment expression is defined.
+	 * @param variable
+	 * @return the replacement expression for the given variable.
+	 * @throws DataException
+	 */
+	public Expression getBackwardReplacementFor(IVariable variable) throws DataException {
+
+		// input validation
+		if (variable == null || !variable.exists())
+			throw new DataException("Input is null or does not exist.");
+		// check initialization
+		if (patternRefinementMachine == null)
+			throw new DataException("Pattern refinement machine not yet initialized");
+		return variableBackwardReplacement.get(variable);
+		
+	}
+	
+	/**
+	 * @return all variables for which a replacement expression is defined.
 	 * @throws DataException
 	 */
 	public Collection<IVariable> getReplacedVariables() throws DataException {
@@ -2867,7 +3156,7 @@ public class Data {
 		// check initialization
 		if (patternRefinementMachine == null)
 			throw new DataException("Pattern refinement machine not yet initialized");
-		return new HashSet<IVariable>(variableReplacement.keySet());
+		return new HashSet<IVariable>(variableForwardReplacement.keySet());
 		
 	}
 	
@@ -3132,11 +3421,8 @@ public class Data {
 		// check initialization
 		if (patternRefinementMachine == null)
 			throw new DataException("Pattern refinement machine not yet initialized");
-		// if machine is abstract pattern machine delegate
-		if (machine.equals(patternAbstractMachine))
-			return getDisappearingPatternVariables();
 		// check input restrictions
-		if (!intermediatePatternMachines.contains(machine))
+		if (!intermediatePatternMachines.contains(machine) && !machine.equals(patternAbstractMachine))
 			throw new DataException("Machine has to be in the refinement chain of the pattern.");
 		return new HashSet<IVariable>(intermediateDisappearingVariables.get(machine));
 		
@@ -3220,5 +3506,119 @@ public class Data {
 		return refinement.size();
 		
 	}
+	
+	/**
+	 * @param machine within the refinement chain of the pattern
+	 * @return all relevant invariants of the given machine. A Invariant is relevant if its predicate
+	 * contains a disappearing or a new variable.
+	 * @throws DataException
+	 */
+	public Collection<IInvariant> getRelevantInvariantsOf(IMachineRoot machine) throws DataException {
+		
+		// input validation
+		if (machine == null || !machine.exists())
+			throw new DataException("Input is null or does not exist.");
+		// check initialization
+		if (patternRefinementMachine == null)
+			throw new DataException("Pattern refinement machine not yet initialized");
+		// check input restrictions
+		if (!intermediatePatternMachines.contains(machine) && !patternRefinementMachine.equals(machine))
+			throw new DataException("Machine has to be in the refinement chain of the pattern.");
+		return new HashSet<IInvariant>(relevantInvariants.get(machine));
+		
+	}
+	
+	public Collection<IVariable> getForwardDependentVariables(IVariable variable) throws DataException {
+		
+		// input validation
+		if (variable == null || !variable.exists())
+			throw new DataException("Input is null or does not exist.");
+		// check initialization
+		if (patternRefinementMachine == null)
+			throw new DataException("Pattern refinement machine not yet initialized");
+		// check input restrictions
+		if (!forwardDependencies.containsKey(variable))
+			throw new DataException("Variable has has no dependencies.");
+		return new HashSet<IVariable>(forwardDependencies.get(variable));
+		
+	}
+	
+	public Collection<IVariable> getBackwardDependentVariables(IVariable variable) throws DataException {
+		
+		// input validation
+		if (variable == null || !variable.exists())
+			throw new DataException("Input is null or does not exist.");
+		// check initialization
+		if (patternRefinementMachine == null)
+			throw new DataException("Pattern refinement machine not yet initialized");
+		// check input restrictions
+		if (!backwardDependencies.containsKey(variable))
+			throw new DataException("Variable has has no dependencies.");
+		return new HashSet<IVariable>(backwardDependencies.get(variable));
+				
+	}
+	
+	public IMachineRoot getMachineAfterDisappearingOf(String variable) throws DataException {
+		
+		// input validation
+		if (variable == null)
+			throw new DataException("Input is null");
+		// check initialization
+		if (patternRefinementMachine == null)
+			throw new DataException("Pattern refinement machine not yet initialized");
+		// check input restrictions
+		if (!variableDisappearing.containsKey(variable))
+			throw new DataException("Variable does not disappear.");
+		
+		IRodinElement parent = variableDisappearing.get(variable).getParent();
+		if (parent == null || !parent.exists() || !(parent instanceof IMachineRoot))
+			throw new DataException("Variable has corrupt parent.");
+		return refinement.get((IMachineRoot)parent);
+
+	}
+	
+	public boolean isNewerThan(IMachineRoot oldMachine, IMachineRoot newMachine) throws DataException {
+		
+		// input validation
+		if (oldMachine == null || !oldMachine.exists() || newMachine == null || !newMachine.exists())
+			throw new DataException("One of the input is null or does not exist.");
+		// check initialization
+		if (patternRefinementMachine == null)
+			throw new DataException("Pattern refinement machine not yet initialized");
+		return machineRank.get(newMachine)>machineRank.get(oldMachine);
+	}
+	
+	public boolean isNewerThan(IVariable oldVariable, IVariable newVariable) throws DataException {
+		
+		// input validation
+		if (oldVariable == null || !oldVariable.exists() || oldVariable == null || !oldVariable.exists())
+			throw new DataException("One of the input is null or does not exist.");
+		// check initialization
+		if (patternRefinementMachine == null)
+			throw new DataException("Pattern refinement machine not yet initialized");
+		
+		// get the old variable parent
+		IRodinElement oldParent = oldVariable.getParent();
+		
+		// check that parent is a machine and declare it as such	
+		IMachineRoot oldMachine;
+		if (oldParent instanceof IMachineRoot)
+			oldMachine = (IMachineRoot) oldParent;
+		else
+			throw new DataException("Old variable parent is not a machine.");
+		
+		// get the new variable parent
+		IRodinElement newParent = newVariable.getParent();
+		
+		// check that parent is a machine and declare it as such	
+		IMachineRoot newMachine;
+		if (newParent instanceof IMachineRoot)
+			newMachine = (IMachineRoot) newParent;
+		else
+			throw new DataException("New variable parent is not a machine.");
+		
+		return machineRank.get(newMachine)>machineRank.get(oldMachine);
+	}
+	
 	
 }
