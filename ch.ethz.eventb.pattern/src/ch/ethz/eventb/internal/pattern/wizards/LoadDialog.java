@@ -27,6 +27,8 @@ import org.rodinp.core.IRodinProject;
 import org.rodinp.core.RodinCore;
 import org.rodinp.core.RodinDBException;
 
+import ch.ethz.eventb.internal.pattern.Data;
+import ch.ethz.eventb.pattern.DataException;
 import ch.ethz.eventb.pattern.EventBPattern;
 import ch.ethz.eventb.pattern.core.IActionMatching;
 import ch.ethz.eventb.pattern.core.ICarrierSetMatching;
@@ -45,13 +47,15 @@ public class LoadDialog extends Dialog {
     private String title;
     private MatchingWizardPage matchingPage;
     MatchingChooserGroup chooser;
+    private Data data;
     
     Button OKbutton;
 
-    public LoadDialog(Shell parentShell, String dialogTitle, MatchingWizardPage matchingPage) {
+    public LoadDialog(Shell parentShell, String dialogTitle, MatchingWizardPage matchingPage, Data data) {
         super(parentShell);
         this.title = dialogTitle;
         this.matchingPage = matchingPage;
+        this.data = data;
     }
     
     protected void configureShell(Shell shell) {
@@ -99,6 +103,7 @@ public class LoadDialog extends Dialog {
 	@Override
 	protected void okPressed() {
 		IPatternRoot root = chooser.getMatchingChooser().getElement();
+		
 		MatchingMachine newMatching = null;
 		Renaming<ICarrierSet> carrierSetRenaming = null;
 		Renaming<IConstant> constantRenaming = null;
@@ -133,6 +138,7 @@ public class LoadDialog extends Dialog {
 			
 		try {
 			matchingPage.loadMatchingMachine(newMatching, carrierSetRenaming, constantRenaming);
+			data.loadMatching(root);
 		} catch (Exception e) {
 			IStatus status =
 				new Status(IStatus.ERROR, EventBPattern.PLUGIN_ID, IStatus.ERROR, e.getMessage(), null);

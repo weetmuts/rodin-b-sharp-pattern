@@ -33,7 +33,10 @@ import org.eventb.core.ast.Predicate;
 import org.rodinp.core.IRodinFile;
 import org.rodinp.core.RodinDBException;
 
-public class MachineGenerator {
+import ch.ethz.eventb.pattern.DataException;
+import ch.ethz.eventb.pattern.IMachineGenerator;
+
+public class MachineGenerator implements IMachineGenerator {
 
 	private Data data;
 	
@@ -292,8 +295,8 @@ public class MachineGenerator {
 		for (IVariable newVariable : newVariables) {
 			IInvariant newInvariant = generatedMachine.getInvariant(INVARIANT_PREFIX + invariantNumber);
 			newInvariant.create(null, null);
-			newInvariant.setLabel(INVARIANT_LABEL + invariantNumber++, null);
-			newInvariant.setTheorem(false, null);
+			newInvariant.setLabel(THEOREM_LABEL + invariantNumber++, null);
+			newInvariant.setTheorem(true, null);
 			String predicate = EventBUtils.getTypingTheorem(data.getPatternRefinementMachine(), newVariable.getIdentifierString());
 			predicate = PatternUtils.substitute(predicate, patternRefinementMap, ff);
 			newInvariant.setPredicateString(predicate, null);

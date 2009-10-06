@@ -1,4 +1,4 @@
-package ch.ethz.eventb.internal.pattern;
+package ch.ethz.eventb.pattern;
 
 public class DataException extends Exception {
 

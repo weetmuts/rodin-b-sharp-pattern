@@ -250,7 +250,6 @@ public class MatchingWizardPage extends WizardPage {
 		problemGroup.getProjectChooser().setElement(problemProject);
 		problemGroup.getMachineChooser().setElement(problemMachine);
 		this.matching = matching;
-		data.loadMatching(matching);
 		variableGroup.setInput(matching);
 		eventGroup.setInput(matching);
 //		this.carrierSetRenaming = carrierSetRenaming;
@@ -538,7 +537,7 @@ public class MatchingWizardPage extends WizardPage {
 			}
 
 			public void widgetSelected(SelectionEvent e) {
-				dialog = new LoadDialog(filegroup.getShell(), "Load Matching", page);
+				dialog = new LoadDialog(filegroup.getShell(), "Load Matching", page, data);
 				dialog.open();
 				updateStatus(null);
 			}

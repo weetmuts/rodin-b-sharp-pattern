@@ -52,9 +52,9 @@ import org.rodinp.internal.core.RodinDB;
 import org.rodinp.keyboard.RodinKeyboardPlugin;
 
 import ch.ethz.eventb.internal.pattern.Data;
-import ch.ethz.eventb.internal.pattern.DataException;
 import ch.ethz.eventb.internal.pattern.EventBUtils;
 import ch.ethz.eventb.internal.pattern.PatternUtils;
+import ch.ethz.eventb.pattern.DataException;
 
 
 /**
