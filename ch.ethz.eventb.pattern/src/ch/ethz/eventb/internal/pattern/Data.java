@@ -5,10 +5,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eventb.core.IAction;
 import org.eventb.core.ICarrierSet;
 import org.eventb.core.IConstant;
+import org.eventb.core.IContextRoot;
 import org.eventb.core.IEvent;
 import org.eventb.core.IEventBProject;
 import org.eventb.core.IGuard;
@@ -17,6 +17,7 @@ import org.eventb.core.IMachineRoot;
 import org.eventb.core.IParameter;
 import org.eventb.core.IRefinesEvent;
 import org.eventb.core.IRefinesMachine;
+import org.eventb.core.ISeesContext;
 import org.eventb.core.IVariable;
 import org.eventb.core.IWitness;
 import org.eventb.core.ast.Expression;
@@ -24,22 +25,29 @@ import org.eventb.core.ast.FormulaFactory;
 import org.eventb.core.ast.FreeIdentifier;
 import org.eventb.core.ast.LanguageVersion;
 import org.eventb.core.ast.Predicate;
-import org.omg.CosNaming.NamingContextExtPackage.AddressHelper;
 import org.rodinp.core.IRodinElement;
 import org.rodinp.core.IRodinProject;
+import org.rodinp.core.RodinCore;
 import org.rodinp.core.RodinDBException;
 
-import ch.ethz.eventb.internal.pattern.wizards.ComplexMatching;
-import ch.ethz.eventb.internal.pattern.wizards.Matching;
-import ch.ethz.eventb.internal.pattern.wizards.MatchingMachine;
-import ch.ethz.eventb.internal.pattern.wizards.Renaming;
+import ch.ethz.eventb.pattern.DataException;
+import ch.ethz.eventb.pattern.IData;
+import ch.ethz.eventb.pattern.IMachineGenerator;
+import ch.ethz.eventb.pattern.core.IActionMatching;
+import ch.ethz.eventb.pattern.core.ICarrierSetMatching;
+import ch.ethz.eventb.pattern.core.IConstantMatching;
+import ch.ethz.eventb.pattern.core.IEventMatching;
+import ch.ethz.eventb.pattern.core.IGuardMatching;
+import ch.ethz.eventb.pattern.core.IParameterMatching;
+import ch.ethz.eventb.pattern.core.IPatternRoot;
+import ch.ethz.eventb.pattern.core.IVariableMatching;
 
 /**
  * Data class where all the necessary information for applying patterns is stored.
  * Some information is stored redundantly on purpose to speed up access. 
  * @author fuersta
  */
-public class Data {
+public class Data implements IData {
 	
 	private FormulaFactory ff;
 	
@@ -2168,32 +2176,114 @@ public class Data {
 	 * @param matching
 	 * @throws DataException
 	 */
-	public void loadMatching(MatchingMachine matching) throws DataException {
+	public void loadMatching(IPatternRoot root) throws DataException {
 		
 		// input validation
-		if (matching == null)
-			throw new DataException("Input is null.");
-		// check initialization
-		if (patternAbstractMachine == null || problemMachine == null)
-			throw new DataException("Pattern machine or problem machine not yet initialized");
-		// check input restrictions
-		if(!matching.getPatternElement().equals(patternAbstractMachine))
-			throw new DataException("Pattern machine in matching is not the same as in data.");
-		if(!matching.getProblemElement().equals(problemMachine))
-			throw new DataException("Problem machine in matching is not the same as in data.");
-		// add matchings
-		for (Matching<IVariable> variables : matching.getChildrenOfType(IVariable.ELEMENT_TYPE))
-			addMatching(variables.getPatternElement(), variables.getProblemElement());
-		for (ComplexMatching<IEvent> events : matching.getChildrenOfTypeEvent()){
-			addMatching(events.getPatternElement(), events.getProblemElement());
-			for (Matching<IParameter> parameters : events.getChildrenOfType(IParameter.ELEMENT_TYPE))
-				addMatching(parameters.getPatternElement(), parameters.getProblemElement());
-			for (Matching<IGuard> guards : events.getChildrenOfType(IGuard.ELEMENT_TYPE))
-				addMatching(guards.getPatternElement(), guards.getProblemElement());
-			for (Matching<IAction> actions : events.getChildrenOfType(IAction.ELEMENT_TYPE))
-				addMatching(actions.getPatternElement(), actions.getProblemElement());
+		if (root == null || !root.exists())
+			throw new DataException("Input is null or does not exist.");
+		IMachineRoot loadPatternMachine;
+		IMachineRoot loadProblemMachine;
+		
+		// get pattern machine 
+		try {
+			IRodinProject patternProject = RodinCore.getRodinDB().getRodinProject(root.getPatternProject());
+			loadPatternMachine = (IMachineRoot)patternProject.getRodinFile(root.getPatternMachine()+".bum").getRoot();
 		}
-	
+		catch (RodinDBException e) {
+			throw new DataException("Error while loading pattern machine.");
+		}
+		// set pattern abstract machine
+		changePatternAbstractMachine(loadPatternMachine);
+		// get problem machine
+		try {
+			IRodinProject problemProject = RodinCore.getRodinDB().getRodinProject(root.getProblemProject());
+			loadProblemMachine = (IMachineRoot)problemProject.getRodinFile(root.getProblemMachine()+".bum").getRoot();
+		}
+		catch (RodinDBException e) {
+			throw new DataException("Error while loading problem machine.");
+		}
+		// set problem machine
+		changeProblemMachine(loadProblemMachine);
+		
+		// get variable matchings
+		try {
+			for (IVariableMatching matching : root.getVariableMatchings())
+				// add variable matching
+				addMatching(
+						PatternUtils.getElementByIdentifier(IVariable.ELEMENT_TYPE, matching.getPatternVariable(), loadPatternMachine),
+						PatternUtils.getElementByIdentifier(IVariable.ELEMENT_TYPE, matching.getProblemVariable(), loadProblemMachine));
+		}
+		catch (RodinDBException e) {
+			throw new DataException("Error while loading variable matching.");
+		}
+		
+		// get event matchings
+		try {
+			for (IEventMatching matching : root.getEventMatchings()){
+				// get matched events
+				IEvent patternEvent = PatternUtils.getElementByLabel(IEvent.ELEMENT_TYPE, matching.getPatternEvent(), loadPatternMachine);
+				IEvent problemEvent = PatternUtils.getElementByLabel(IEvent.ELEMENT_TYPE, matching.getProblemEvent(), loadProblemMachine);
+				// add event matching
+				addMatching(patternEvent, problemEvent);
+				
+				// get parameter matchings
+				for (IParameterMatching match : matching.getParameterMatchings())
+					// add parameter matching
+					addMatching(
+							PatternUtils.getElementByIdentifier(IParameter.ELEMENT_TYPE, match.getPatternParameter(), patternEvent),
+							PatternUtils.getElementByIdentifier(IParameter.ELEMENT_TYPE, match.getProblemParameter(), problemEvent));
+							
+				// get guard matchings
+				for (IGuardMatching match : matching.getGuardMatchings())
+					// add guard matching
+					addMatching(
+							PatternUtils.getElementByLabel(IGuard.ELEMENT_TYPE, match.getPatternGuard(), patternEvent),
+							PatternUtils.getElementByLabel(IGuard.ELEMENT_TYPE, match.getPatternGuard(), problemEvent));
+							
+				// get action matchings
+				for (IActionMatching match : matching.getActionMatchings())
+					// add action matching
+					addMatching(
+							PatternUtils.getElementByLabel(IAction.ELEMENT_TYPE, match.getPatternAction(), patternEvent),
+							PatternUtils.getElementByLabel(IAction.ELEMENT_TYPE, match.getProblemAction(), problemEvent));
+				}
+		}
+		catch (RodinDBException e) {
+			throw new DataException("Error while loading event matching.");
+		}
+		// collect seen carrierSets and constants
+		HashMap<String, ICarrierSet> carrierSets = new HashMap<String, ICarrierSet>();
+		HashMap<String, IConstant> constants = new HashMap<String, IConstant>();
+		try {
+			for (ISeesContext context : loadPatternMachine.getSeesClauses()) {
+				IContextRoot contextRoot = context.getSeenContextRoot();
+				for (ICarrierSet carrierSet : contextRoot.getCarrierSets())
+					carrierSets.put(carrierSet.getIdentifierString(), carrierSet);
+				for (IConstant constant : contextRoot.getConstants())
+					constants.put(constant.getIdentifierString(), constant);
+			}
+		}
+		catch (RodinDBException e) {
+			throw new DataException("Error while collecting seen context.");
+		}
+		// get carrierSet matchings
+		try {
+			for (ICarrierSetMatching matching : root.getCarrierSetMatchings())
+				// add carrierSet matching
+				updateMatching(carrierSets.get(matching.getPatternCarrierSet()), matching.getProblemCarrierSet());
+		}
+		catch (RodinDBException e) {
+			throw new DataException("Error while loading carrierSet matching.");
+		}
+		// get constant matchings
+		try {
+			for (IConstantMatching matching : root.getConstantMatchings())
+				// add constant matching
+				updateMatching(constants.get(matching.getPatternConstant()), matching.getProblemConstant());
+		}
+		catch (RodinDBException e) {
+			throw new DataException("Error while loading constant matching.");
+		}
 	}
 	
 	/**
@@ -3618,6 +3708,10 @@ public class Data {
 			throw new DataException("New variable parent is not a machine.");
 		
 		return machineRank.get(newMachine)>machineRank.get(oldMachine);
+	}
+
+	public IMachineGenerator createNewMachineGenerator() {
+		return new MachineGenerator(this);
 	}
 	
 	
