@@ -174,7 +174,7 @@ public interface IData {
 	 * Update the replacement expression for a disappearing parameter of the pattern machine
 	 * in relation to the pattern refinement.
 	 * The replacement has to be a non-empty string.
-	 * @param parameter
+	 * @param witness
 	 * @param replacement of the parameter
 	 * @throws DataException
 	 */
@@ -182,7 +182,7 @@ public interface IData {
 			throws DataException;
 
 	/**
-	 * The given matching machine is fed into the data.
+	 * The given machine matching is fed into the data.
 	 * @param matching
 	 * @throws DataException
 	 */
