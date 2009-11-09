@@ -10,5 +10,49 @@
             name="Pattern plug-in">
       </cheatsheet>
    </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            id="ch.ethz.eventb.pattern.example.commands.category"
+            name="Generator">
+      </category>
+      <command
+            categoryId="ch.ethz.eventb.pattern.example.commands.category"
+            id="ch.ethz.eventb.pattern.example.commands.generateCommand"
+            name="Generate Machine">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="ch.ethz.eventb.pattern.example.handlers.GeneratorHandler"
+            commandId="ch.ethz.eventb.pattern.example.commands.generateCommand">
+      </handler>
+   </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="ch.ethz.eventb.pattern.example.commands.generateCommand"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+6">
+      </key>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="menu:org.eclipse.ui.main.menu?after=additions">
+         <menu
+               id="ch.ethz.eventb.pattern.example.menus.example"
+               label="Pattern Example"
+               mnemonic="M">
+            <command
+                  commandId="ch.ethz.eventb.pattern.example.commands.generateCommand"
+                  id="ch.ethz.eventb.pattern.example.menus.generateCommand"
+                  mnemonic="S">
+            </command>
+         </menu>
+      </menuContribution>
+   </extension>
 
 </plugin>
