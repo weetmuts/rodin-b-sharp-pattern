@@ -642,7 +642,7 @@ public class IncorporatingWizardPage extends WizardPage {
 		
 		// Table viewer of the matching
 		Group witnessGroup = new Group(container,SWT.NULL);
-		witnessGroup.setText("Typing for the witnesses");
+		witnessGroup.setText("Replacement for the disappeared parameters");
 		gd = new GridData(GridData.FILL_BOTH);
 		gd.horizontalSpan = 2;
 		witnessGroup.setLayoutData(gd);

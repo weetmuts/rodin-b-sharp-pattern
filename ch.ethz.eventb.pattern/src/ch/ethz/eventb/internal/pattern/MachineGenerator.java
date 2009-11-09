@@ -7,6 +7,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.ProgressMonitor;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
@@ -86,6 +88,9 @@ public class MachineGenerator implements IMachineGenerator {
 	}
 	
 	public IMachineRoot generateMachine(String name, boolean generatePO, IProgressMonitor monitor) throws Exception {
+		
+		if (monitor == null)
+			monitor = new NullProgressMonitor();
 		
 		monitor.beginTask("Generate machine", 8);
 		
@@ -740,6 +745,7 @@ public class MachineGenerator implements IMachineGenerator {
 					String predicate = guard.getPredicateString();
 					predicate = PatternUtils.substitute(predicate, problemMap, ff);
 					predicate = PatternUtils.substitute(predicate, parameterMap, ff);
+					predicate = PatternUtils.substitute(predicate, patternRefinementMap, ff);
 					grd.setPredicateString(predicate, null);
 					grd.setComment("Extra guard", null);
 				}
@@ -762,6 +768,7 @@ public class MachineGenerator implements IMachineGenerator {
 					String assignment = action.getAssignmentString();
 					assignment = PatternUtils.substitute(assignment, problemMap, ff);
 					assignment = PatternUtils.substitute(assignment, parameterMap, ff);
+					assignment = PatternUtils.substitute(assignment, patternRefinementMap, ff);
 					act.setAssignmentString(assignment, null);
 					act.setComment("Extra action", null);
 				}

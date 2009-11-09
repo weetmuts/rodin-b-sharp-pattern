@@ -749,7 +749,6 @@ public class Data implements IData {
 					variableAppearing.put(variable.getIdentifierString(), variable);
 				for (IVariable variable : disappearingVariables)
 					variableDisappearing.put(variable.getIdentifierString(), variable);
-				
 								
 			}
 			
@@ -908,14 +907,16 @@ public class Data implements IData {
 					if (EventBUtils.isRelevant(invariant, relevantVariables)){
 						relevantInvs.add(invariant);
 						// check for variables
-						for (FreeIdentifier identifier : 
-							ff.parsePredicate(invariant.getPredicateString(), LanguageVersion.LATEST, null).getParsedPredicate().getFreeIdentifiers()) {
-							IVariable variable = variableAppearing.get(identifier.getName());
+						Collection<String> idents = EventBUtils.getFreeIdentifiers(invariant);
+						// Remove the seen carrier sets and constants.
+						idents.removeAll(EventBUtils.getSeenCarrierSetsAndConstants(currentMachine));
+						for (String identifier : idents) {
+							IVariable variable = variableAppearing.get(identifier);
 							if (variable == null)
 								throw new DataException("Variable in invariant does not exist.");
-							if (variableRemainings.containsKey(identifier.getName()))
+							if (variableRemainings.containsKey(identifier))
 									continue;
-							if (!variablesEntries.containsKey(identifier.getName()))
+							if (!variablesEntries.containsKey(identifier))
 								relatedVariables.add(variable);
 								
 						}
@@ -3492,7 +3493,7 @@ public class Data implements IData {
 		if (patternRefinementMachine == null)
 			throw new DataException("Pattern refinement machine not yet initialized");
 		// check input restrictions
-		if (!intermediatePatternMachines.contains(machine))
+		if (!intermediatePatternMachines.contains(machine) && !machine.equals(patternRefinementMachine))
 			throw new DataException("Machine has to be in the refinement chain of the pattern.");
 		return new HashSet<IVariable>(intermediateNewVariables.get(machine));
 		
