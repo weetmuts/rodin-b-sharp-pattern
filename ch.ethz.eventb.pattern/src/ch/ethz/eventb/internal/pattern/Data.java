@@ -632,6 +632,8 @@ public class Data implements IData {
 			variableAppearing.clear();
 			variableDisappearing.clear();
 			
+			allChains.clear();
+			
 			
 			// PATTERN
 			

@@ -5,7 +5,7 @@ import org.rodinp.core.IInternalElementType;
 import org.rodinp.core.RodinCore;
 import org.rodinp.core.RodinDBException;
 
-import ch.ethz.eventb.internal.pattern.EventBPattern;
+import ch.ethz.eventb.pattern.EventBPattern;
 
 
 public interface ICarrierSetMatching extends IInternalElement{
