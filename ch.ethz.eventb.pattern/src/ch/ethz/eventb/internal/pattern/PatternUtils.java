@@ -74,6 +74,7 @@ import ch.ethz.eventb.internal.pattern.wizards.IComplexMatching;
 import ch.ethz.eventb.internal.pattern.wizards.Matching;
 import ch.ethz.eventb.internal.pattern.wizards.MatchingMachine;
 import ch.ethz.eventb.internal.pattern.wizards.Renaming;
+import ch.ethz.eventb.pattern.EventBPattern;
 
 
 /**

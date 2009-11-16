@@ -3,7 +3,7 @@ package ch.ethz.eventb.pattern.core.basis;
 import org.rodinp.core.IAttributeType;
 import org.rodinp.core.RodinCore;
 
-import ch.ethz.eventb.internal.pattern.EventBPattern;
+import ch.ethz.eventb.pattern.EventBPattern;
 
 
 public final class PatternAttributes {
