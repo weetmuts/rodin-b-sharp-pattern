@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eventb.core.IEvent;
 import org.eventb.core.IMachineRoot;
+import org.eventb.core.IParameter;
 import org.eventb.core.IVariable;
 import org.rodinp.core.IRodinProject;
 import org.rodinp.core.RodinDBException;
@@ -575,12 +576,24 @@ public class RenamingWizardPage extends WizardPage {
 			Set<String> notMatchedVariables = new HashSet<String>();
 			MatchingMachine matching = matchingPage.getMatching();
 			if (matching != null) {
+				// collect all names of not matched variables
 				for (IVariable var : matching.getProblemElement().getVariables())
 					if (!PatternUtils.isInMatchings(null, var, matching.getChildrenOfType(IVariable.ELEMENT_TYPE)))
 						notMatchedVariables.add(var.getIdentifierString());
+				// check if renaming contains a collected name
 				for (String renaming : renamedVariables.getRenameList())
 					if (notMatchedVariables.contains(renaming))
 						return "Variable " + renaming + " already exists in problem machine";
+				
+				Set<String> parameters = new HashSet<String>();
+				// collect all names of parameters
+				for (IEvent evt : matching.getProblemElement().getEvents())
+					for (IParameter par : evt.getParameters())
+						parameters.add(par.getIdentifierString());
+				// check if renaming contains a collected name
+				for (String renaming : renamedVariables.getRenameList())
+					if (parameters.contains(renaming))
+						return "Parameter " + renaming + " already exists in a problem event";
 				
 				// check for duplicate event renaming
 				renamings = renamedEvents.getRenameList();
