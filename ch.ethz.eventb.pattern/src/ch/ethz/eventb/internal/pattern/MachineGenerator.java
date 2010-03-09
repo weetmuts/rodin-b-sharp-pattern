@@ -2,12 +2,9 @@ package ch.ethz.eventb.internal.pattern;
 
 import static org.eventb.core.IConfigurationElement.DEFAULT_CONFIGURATION;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.swing.ProgressMonitor;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -30,8 +27,6 @@ import org.eventb.core.IConvergenceElement.Convergence;
 import org.eventb.core.ast.Expression;
 import org.eventb.core.ast.FormulaFactory;
 import org.eventb.core.ast.FreeIdentifier;
-import org.eventb.core.ast.LanguageVersion;
-import org.eventb.core.ast.Predicate;
 import org.rodinp.core.IRodinFile;
 import org.rodinp.core.RodinDBException;
 
@@ -512,25 +507,18 @@ public class MachineGenerator implements IMachineGenerator {
 			evt.setExtended(false, null);
 			// copy the convergence status
 			evt.setConvergence(event.getConvergence(), null);
+			
+			Map<FreeIdentifier, Expression> temporaryMap = new HashMap<FreeIdentifier, Expression>();
 			// copy all parameters
 			parameterNumber = 1;
 			for (IParameter parameter : event.getParameters()){
 				IParameter par = evt.getParameter(PARAMETER_PREFIX + parameterNumber++);
+				String identifer = parameter.getIdentifierString();
 				par.create(null, null);
-				par.setIdentifierString(parameter.getIdentifierString(), null);
+				par.setIdentifierString("pat_" + identifer, null);
+				temporaryMap.put(ff.makeFreeIdentifier(identifer, null), ff.makeFreeIdentifier("pat_" + identifer, null));
 			}
-			// copy all witnesses (although shouldn't have any)
-			 //TODO: extract the relationship of the parameters
-//			j = 1;
-//			for (IWitness witness : event.getWitnesses()){
-//				IWitness wit = evt.getWitness("wit" + (j++));
-//				wit.create(null, null);
-//				wit.setLabel(witness.getLabel(),null);
-//				String predicate = witness.getPredicateString();
-//				predicate = PatternUtils.substitute(predicate, refMap, ff);
-//				wit.setPredicateString(predicate, null);
-//			}			
-//			
+				
 			// copy all guards
 			guardNumber = 1;
 			for (IGuard guard : event.getGuards()){
@@ -540,6 +528,7 @@ public class MachineGenerator implements IMachineGenerator {
 				grd.setTheorem(guard.isTheorem(), null);
 				String predicate = guard.getPredicateString();
 				predicate = PatternUtils.substitute(predicate, patternRefinementMap, ff);
+				predicate = PatternUtils.substitute(predicate, temporaryMap, ff);
 				grd.setPredicateString(predicate, null);
 			}
 			// copy all actions
@@ -550,6 +539,7 @@ public class MachineGenerator implements IMachineGenerator {
 				act.setLabel(ACTION_LABEL + actionNumber++, null);
 				String assignment = action.getAssignmentString();
 				assignment = PatternUtils.substitute(assignment, patternRefinementMap, ff);
+				assignment = PatternUtils.substitute(assignment, temporaryMap, ff);
 				act.setAssignmentString(assignment, null);
 			}
 			monitor.worked(1);
@@ -700,20 +690,16 @@ public class MachineGenerator implements IMachineGenerator {
 				evt.setExtended(false, null);
 				// copy the convergence status
 				evt.setConvergence(refEvent.getConvergence(), null);
-				// copy all extra parameters from problem event
-//				Collection<IParameter> matchedParameters = new ArrayList<IParameter>();
-//				for (IParameter prm : match.getProblemChildrenOfType(IParameter.ELEMENT_TYPE))
-//					matchedParameters.add(PatternUtils.getElementByIdentifier(IParameter.ELEMENT_TYPE, prm.getIdentifierString(), problemEvent));
 				
 				parameterNumber = 1;
-//				for (IParameter parameter : problemEvent.getParameters()) {
-//					if (!matchedParameters.contains(parameter)) {
-//						IParameter prm = evt.getParameter("internal_prm" + j);
-//						prm.create(null, null);
-//						prm.setIdentifierString(parameter.getIdentifierString(), null);
-//						prm.setComment("Extra parameter", null);
-//					}
-//				}
+				
+				// copy all extra parameters from problem event
+				for (IParameter parameter : data.getNotMatchedParametersOf(problemEvent)) {
+					IParameter prm = evt.getParameter(PARAMETER_PREFIX + parameterNumber++);
+					prm.create(null, null);
+					prm.setIdentifierString(parameter.getIdentifierString(), null);
+					prm.setComment("Copy from problem", null);
+				}
 									
 				// copy parameters from refinement
 				for (IParameter parameter : refEvent.getParameters()){
