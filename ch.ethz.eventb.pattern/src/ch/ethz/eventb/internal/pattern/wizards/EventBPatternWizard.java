@@ -133,6 +133,7 @@ public class EventBPatternWizard extends Wizard implements INewWizard {
 	public boolean performFinish() {
 		final String machineRefName = incorporatingPage.getMachineName();
 		final boolean generatePOs = incorporatingPage.generatePO();
+		final boolean copyInvariants = incorporatingPage.copyInvariants();
 		
 		final MachineGenerator generator = new MachineGenerator(data);
 		
@@ -140,6 +141,8 @@ public class EventBPatternWizard extends Wizard implements INewWizard {
 			public void run(IProgressMonitor monitor)
 					throws InvocationTargetException {
 				try {
+					if (copyInvariants)
+						generator.doCopyInvariants();
 					generatedMachine = generator.generateMachine(machineRefName, generatePOs, monitor);
 					monitor.subTask("Opening file for editing...");
 					getShell().getDisplay().asyncExec(new Runnable() {

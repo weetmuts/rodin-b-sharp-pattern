@@ -102,6 +102,10 @@ public class IncorporatingWizardPage extends WizardPage {
 	private Button generatePO;
 	
 	private boolean doGeneratePO;
+	
+	private Button copyInvariants;
+	
+	private boolean doCopyInvariants;
 
 	private Data data;
 	
@@ -806,6 +810,23 @@ public class IncorporatingWizardPage extends WizardPage {
 		Label conftext = new Label(group,SWT.NONE);
 		conftext.setText("generate Proof Obligations");
 		
+		copyInvariants = new Button(group,SWT.CHECK);
+		copyInvariants.addSelectionListener(new SelectionListener() {
+
+			public void widgetDefaultSelected(SelectionEvent e) {
+				widgetSelected(e);
+			}
+
+			public void widgetSelected(SelectionEvent e) {
+				doCopyInvariants = copyInvariants.getSelection();
+				dialogChanged();
+			}
+
+		});
+			
+		Label conftext2 = new Label(group,SWT.NONE);
+		conftext2.setText("copy Invariants of the pattern refinement (no gluing invariants are copied)");
+		
 		
 		
 		
@@ -835,6 +856,7 @@ public class IncorporatingWizardPage extends WizardPage {
 			variableMatching = matchingPage.getMatching().getChildrenOfType(IVariable.ELEMENT_TYPE);
 		generatePO.setSelection(true);
 		doGeneratePO = true;
+		doCopyInvariants = false;
 	}
 
 	/**
@@ -900,6 +922,10 @@ public class IncorporatingWizardPage extends WizardPage {
 	
 	public boolean generatePO() {
 		return doGeneratePO;
+	}
+	
+	public boolean copyInvariants() {
+		return doCopyInvariants;
 	}
 
 }
