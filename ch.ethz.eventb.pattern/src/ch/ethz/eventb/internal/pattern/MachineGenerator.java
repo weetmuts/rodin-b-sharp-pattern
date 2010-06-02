@@ -4,6 +4,7 @@ import static org.eventb.core.IConfigurationElement.DEFAULT_CONFIGURATION;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -78,8 +79,14 @@ public class MachineGenerator implements IMachineGenerator {
 	
 	private final String REFINEMENT_PREFIX = "internal_refinement";
 	
+	private boolean copyInvariants = false; 
+	
 	public MachineGenerator(Data data) {
 		this.data = data;
+	}
+	
+	public void doCopyInvariants() {
+		copyInvariants = true;
 	}
 	
 	public IMachineRoot generateMachine(String name, boolean generatePO, IProgressMonitor monitor) throws Exception {
@@ -288,7 +295,7 @@ public class MachineGenerator implements IMachineGenerator {
 		Collection<IVariable> disappearingVariables = data.getDisappearingPatternVariables();
 		Collection<IVariable> remainingVariables = data.getRemainingPatternVariables();
 		
-		monitor.beginTask(null , newVariables.size() + disappearingVariables.size() + remainingVariables.size());
+		monitor.beginTask(null , newVariables.size() + disappearingVariables.size() + remainingVariables.size()+1);
 		monitor.subTask("create invariants");
 		
 		// create invariant for new variables
@@ -339,6 +346,50 @@ public class MachineGenerator implements IMachineGenerator {
 			monitor.worked(1);
 		}
 		
+		if (copyInvariants)
+			copyInvariants(new SubProgressMonitor(monitor, 1));
+		else
+			monitor.worked(1);
+		
+		monitor.done();
+	
+	}
+	
+private void copyInvariants(IProgressMonitor monitor) throws RodinDBException, DataException {
+		
+		
+		IInvariant[] invariants = data.getPatternRefinementMachine().getInvariants();
+		IVariable[] variables = data.getPatternRefinementMachine().getVariables();
+		
+		
+		monitor.beginTask(null , invariants.length);
+		monitor.subTask("copy invariants");
+		
+		// copy invariants of pattern refinement
+		outer:for (IInvariant invariant : invariants) {
+			String predicate = invariant.getPredicateString();
+			// get all free Identifiers in the invariant
+			List<String> freeIdents = EventBUtils.getPredicateFreeIdentifiers(predicate);
+			// check if any of them is not a variable of the pattern refinement
+			for (String ident : freeIdents)
+				if(!PatternUtils.isInArray(ident, variables))
+					continue outer;
+			IInvariant newInvariant = generatedMachine.getInvariant(INVARIANT_PREFIX + invariantNumber);
+			newInvariant.create(null, null);
+			if (invariant.isTheorem()){
+				newInvariant.setLabel(THEOREM_LABEL + invariantNumber++, null);
+				newInvariant.setTheorem(true, null);
+			}
+			else {
+				newInvariant.setLabel(INVARIANT_LABEL + invariantNumber++, null);
+				newInvariant.setTheorem(false, null);
+			}
+			predicate = PatternUtils.substitute(predicate, patternRefinementMap, ff);
+			newInvariant.setPredicateString(predicate, null);
+			newInvariant.setComment("Copied invariant of pattern refinement", null);
+			monitor.worked(1);
+		}
+				
 		monitor.done();
 	
 	}
