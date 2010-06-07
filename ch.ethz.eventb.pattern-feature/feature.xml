@@ -2,7 +2,7 @@
 <feature
       id="ch.ethz.eventb.pattern_feature"
       label="%featureName"
-      version="1.0.1.qualifier"
+      version="1.0.3.qualifier"
       provider-name="%providerName">
 
    <description>
@@ -18,8 +18,13 @@
    </license>
 
    <url>
-      <update label="Pattern" url="http://www.n.ethz.ch/~fuersta/download/pattern/"/>
+      <update label="ETHZ Update Site" url="http://people.inf.ethz.ch/fuersta/update-site"/>
    </url>
+
+   <requires>
+      <import plugin="org.eventb.ui" version="1.1.0" match="greaterOrEqual"/>
+      <import plugin="org.rodinp.keyboard" version="1.0.0" match="greaterOrEqual"/>
+   </requires>
 
    <plugin
          id="ch.ethz.eventb.pattern"
