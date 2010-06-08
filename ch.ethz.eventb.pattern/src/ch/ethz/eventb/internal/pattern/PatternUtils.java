@@ -19,31 +19,21 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRunnable;
-import org.eclipse.core.runtime.Assert;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
-import org.eventb.core.IAction;
 import org.eventb.core.IAssignmentElement;
 import org.eventb.core.IContextRoot;
 import org.eventb.core.IEvent;
 import org.eventb.core.IEventBRoot;
-import org.eventb.core.IGuard;
 import org.eventb.core.IIdentifierElement;
-import org.eventb.core.IInvariant;
 import org.eventb.core.ILabeledElement;
 import org.eventb.core.IMachineRoot;
 import org.eventb.core.IPredicateElement;
@@ -557,39 +547,7 @@ public class PatternUtils {
 		expression = expression.substituteFreeIdents(map, ff);
 		return expression.toString();
 	}
-	
-//	public static boolean backupFile(IMachineRoot machine, IProgressMonitor monitor) {
-//		Assert.isNotNull(machine, "machine must not be null");
-//		IFile file = machine.getRodinFile().getResource();
-//		IProject project = file.getProject();
-//		try {
-//			IPath backupPath = new Path(file.getProjectRelativePath()+"_tmp");
-//			IFile backup = project.getFile(backupPath);
-//			if (backup.exists())
-//				backup.delete(true, monitor);
-//			file.copy(backupPath, true, monitor);
-//		} catch (Exception e) {
-//			return false;
-//		}
-//		return true;
-//	}
-//	
-//	public static boolean restoreFile(IMachineRoot machine, IProgressMonitor monitor) {
-//		Assert.isNotNull(machine, "machine must not be null");
-//		IFile file = machine.getRodinFile().getResource();
-//		IProject project = file.getProject();
-//		try {
-//			IPath backupPath = new Path(file.getProjectRelativePath()+"_tmp");
-//			IFile backup = project.getFile(backupPath);
-//			if (file.exists())
-//				file.delete(true, monitor);
-//			backup.copy(file.getProjectRelativePath(), true, monitor);
-//		} catch (CoreException e) {
-//			return false;
-//		}
-//		return true;
-//	}
-	
+		
 	public static void unsetExtended(IEvent event) throws RodinDBException {
 		new UnsetExtended(event).run(null);
 	}

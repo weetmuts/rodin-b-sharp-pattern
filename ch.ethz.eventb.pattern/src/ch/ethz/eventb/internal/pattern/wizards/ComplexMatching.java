@@ -63,6 +63,7 @@ public class ComplexMatching<T extends IInternalElement> extends Matching<T>
 	 * edu.ethz.eventb.internal.pattern.wizards.IComplexMatching#getChildrenOfType
 	 * (org.rodinp.core.IElementType)
 	 */
+	@SuppressWarnings("unchecked")
 	public <S extends IInternalElement> Matching<S>[] getChildrenOfType(
 			IElementType<S> type) {
 		Collection<Matching<S>> result = new ArrayList<Matching<S>>();
@@ -71,9 +72,10 @@ public class ComplexMatching<T extends IInternalElement> extends Matching<T>
 				result.add((Matching<S>) matching);
 			}
 		}
-		return result.  toArray(new Matching[result.size()]);
+		return result.toArray(new Matching[result.size()]);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public ComplexMatching<IEvent>[] getChildrenOfTypeEvent() {
 		Collection<ComplexMatching<IEvent>> result = new ArrayList<ComplexMatching<IEvent>>();
 		for (Matching<?> matching : matchings) {
