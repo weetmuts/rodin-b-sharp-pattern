@@ -10,7 +10,6 @@
  *******************************************************************************/
 package ch.ethz.eventb.internal.pattern.wizards;
 
-import org.eclipse.jface.util.Assert;
 import org.eventb.core.IEventBRoot;
 import org.eventb.core.IIdentifierElement;
 import org.eventb.core.ILabeledElement;
@@ -18,6 +17,7 @@ import org.eventb.core.ISCIdentifierElement;
 import org.rodinp.core.IElementType;
 import org.rodinp.core.IInternalElement;
 import org.rodinp.core.IInternalElementType;
+import org.rodinp.core.IParent;
 import org.rodinp.core.IRodinElement;
 import org.rodinp.core.RodinDBException;
 
@@ -40,7 +40,7 @@ public class Matching<T extends IInternalElement> implements IMatching<T> {
 	// The pattern element
 	protected String pattern;
 	
-	private IMatching parents;
+	private IMatching<? extends IParent> parents;
 	
 	// The type of the elements in matching.
 	private IInternalElementType<T> type;

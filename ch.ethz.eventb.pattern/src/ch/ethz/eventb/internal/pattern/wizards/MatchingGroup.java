@@ -10,6 +10,9 @@
  *******************************************************************************/
 package ch.ethz.eventb.internal.pattern.wizards;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -427,7 +430,10 @@ public class MatchingGroup<T extends IInternalElement> {
 	public Matching<T>[] getMatchings(){
 		if (root != null)
 			return root.getChildrenOfType(type);
-		else return new Matching[0];
+		else {
+			return new Matching[0];
+		}
+		
 	}
 	
 }
