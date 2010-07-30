@@ -46,7 +46,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.ui.WorkbenchException;
 import org.eventb.core.IAction;
 import org.eventb.core.ICarrierSet;
 import org.eventb.core.IConstant;

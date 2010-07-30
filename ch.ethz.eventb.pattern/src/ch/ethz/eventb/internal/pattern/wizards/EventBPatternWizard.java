@@ -1,18 +1,12 @@
 package ch.ethz.eventb.internal.pattern.wizards;
 
-import static org.eventb.core.IConfigurationElement.DEFAULT_CONFIGURATION;
-
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
@@ -21,26 +15,10 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWizard;
-import org.eventb.core.IAction;
-import org.eventb.core.ICarrierSet;
-import org.eventb.core.IConfigurationElement;
-import org.eventb.core.IConstant;
-import org.eventb.core.IEvent;
-import org.eventb.core.IEventBProject;
-import org.eventb.core.IGuard;
-import org.eventb.core.IInvariant;
 import org.eventb.core.IMachineRoot;
-import org.eventb.core.IParameter;
-import org.eventb.core.IRefinesEvent;
-import org.eventb.core.IRefinesMachine;
-import org.eventb.core.ISeesContext;
-import org.eventb.core.IVariable;
-import org.eventb.core.IWitness;
-import org.eventb.core.IConvergenceElement.Convergence;
 import org.eventb.core.ast.Expression;
 import org.eventb.core.ast.FormulaFactory;
 import org.eventb.core.ast.FreeIdentifier;
-import org.rodinp.core.IInternalElement;
 import org.rodinp.core.IRodinFile;
 import org.rodinp.core.RodinDBException;
 
