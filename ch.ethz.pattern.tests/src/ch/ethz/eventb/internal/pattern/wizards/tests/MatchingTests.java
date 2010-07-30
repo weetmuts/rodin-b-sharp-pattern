@@ -1,9 +1,4 @@
-/**
- * 
- */
 package ch.ethz.eventb.internal.pattern.wizards.tests;
-
-import static org.junit.Assert.*;
 
 import org.eventb.core.IAction;
 import org.eventb.core.IEvent;

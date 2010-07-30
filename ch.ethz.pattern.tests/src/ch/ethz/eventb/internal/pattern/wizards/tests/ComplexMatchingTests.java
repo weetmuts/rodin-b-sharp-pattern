@@ -3,14 +3,11 @@
  */
 package ch.ethz.eventb.internal.pattern.wizards.tests;
 
-import static org.junit.Assert.*;
-
 import java.util.Collection;
 
 import org.eventb.core.IAction;
 import org.eventb.core.IEvent;
 import org.eventb.core.IGuard;
-import org.eventb.core.IVariable;
 import org.junit.Test;
 import org.rodinp.core.RodinDBException;
 

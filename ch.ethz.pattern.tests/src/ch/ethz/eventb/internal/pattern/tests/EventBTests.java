@@ -26,10 +26,8 @@ import org.eventb.core.IMachineRoot;
 import org.eventb.core.IParameter;
 import org.eventb.core.IVariable;
 import org.junit.Before;
-import org.rodinp.core.IInternalElement;
 
 import ch.ethz.eventb.internal.pattern.wizards.ComplexMatching;
-import ch.ethz.eventb.internal.pattern.wizards.IMatching;
 import ch.ethz.eventb.internal.pattern.wizards.Matching;
 import ch.ethz.eventb.internal.pattern.wizards.MatchingMachine;
 import ch.ethz.eventb.internal.pattern.wizards.Renaming;
