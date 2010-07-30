@@ -10,9 +10,6 @@
  *******************************************************************************/
 package ch.ethz.eventb.internal.pattern.wizards;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;

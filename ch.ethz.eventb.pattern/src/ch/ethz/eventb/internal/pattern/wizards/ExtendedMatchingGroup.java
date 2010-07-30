@@ -12,7 +12,6 @@ package ch.ethz.eventb.internal.pattern.wizards;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.viewers.DoubleClickEvent;

@@ -126,7 +126,7 @@ public class PatternUtils {
 		return RodinCore.getRodinDB().getRodinProject(name);
 	}
 
-	private static IEvent[] getRefinementEvents(IEvent event,
+	public static IEvent[] getRefinementEvents(IEvent event,
 			IMachineRoot refMachine) throws RodinDBException {
 		if (event.isInitialisation())
 			for (IEvent refEvent : refMachine.getEvents())

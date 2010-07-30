@@ -38,17 +38,13 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.TreeItem;
-import org.eventb.core.IEvent;
 import org.eventb.core.IEventBProject;
 import org.eventb.core.IInvariant;
 import org.eventb.core.IMachineRoot;
-import org.eventb.core.IParameter;
 import org.eventb.core.IVariable;
 import org.eventb.core.IWitness;
 import org.rodinp.core.IRodinFile;
-import org.rodinp.core.RodinCore;
 import org.rodinp.core.RodinDBException;
-import org.rodinp.internal.core.RodinDB;
 import org.rodinp.keyboard.RodinKeyboardPlugin;
 
 import ch.ethz.eventb.internal.pattern.Data;
