@@ -51,6 +51,7 @@ import org.eventb.core.ICarrierSet;
 import org.eventb.core.IConstant;
 import org.eventb.core.IContextRoot;
 import org.eventb.core.IEvent;
+import org.eventb.core.IExtendsContext;
 import org.eventb.core.IGuard;
 import org.eventb.core.IMachineRoot;
 import org.eventb.core.ISeesContext;
@@ -150,34 +151,50 @@ public class MatchingWizardPage extends WizardPage {
 					"input must be a machine");
 			ArrayList<Object> result = new ArrayList<Object>();
 			try {
-				// Stored the root element and return its children.
+				// Store the root element and return its children.
 				root = PatternUtils.getRootByName(IMachineRoot.ELEMENT_TYPE, ((MatchingMachine)inputElement).getPatternElement().getElementName(), patternGroup.getProjectChooser().getElement()).getSeesClauses();
-								
-				for(ISeesContext context : root) {
-					IContextRoot contextRoot = PatternUtils.getRodinContext(((MatchingMachine)inputElement).getPatternElement().getRodinProject(), context.getSeenContextName());
-					if (contextRoot != null) {
-						if(!openFiles.contains(contextRoot.getRodinFile()))
-							openFiles.add(contextRoot.getRodinFile());
-						for (ICarrierSet carrierset : contextRoot.getCarrierSets())
-							result.add(carrierset);
-						for (IConstant constant : contextRoot.getConstants())
-							result.add(constant);
+				
+				
+				ArrayList<IContextRoot> contexts = new ArrayList<IContextRoot>();
+				for(ISeesContext seenContext : root) {
+					IContextRoot context = seenContext.getSeenContextRoot();
+					if (context.exists()){
+						for(IContextRoot cr : PatternUtils.getExtendedContext(context))
+							if (!contexts.contains(cr))
+								contexts.add(cr);
 					}
 				}
+				
+				for(IContextRoot contextRoot : contexts) {
+					if(!openFiles.contains(contextRoot.getRodinFile()))
+						openFiles.add(contextRoot.getRodinFile());
+					for (ICarrierSet carrierset : contextRoot.getCarrierSets())
+						result.add(carrierset);
+					for (IConstant constant : contextRoot.getConstants())
+						result.add(constant);
+				}
+				
 				// get problem context
-				for (ISeesContext context : ((MatchingMachine)inputElement).getProblemElement().getSeesClauses()) {
-					IContextRoot contextRoot = PatternUtils.getRodinContext(((MatchingMachine)inputElement).getProblemElement().getRodinProject(), context.getSeenContextName());
-					if (contextRoot != null) {
-						if(!openFiles.contains(contextRoot.getRodinFile()))
-							openFiles.add(contextRoot.getRodinFile());
-						comboContent.clear();
-						for (ICarrierSet carrierset : contextRoot.getCarrierSets())
-							comboContent.add(PatternUtils.getDisplayText(carrierset));
-						for (IConstant constant : contextRoot.getConstants())
-							comboContent.add(PatternUtils.getDisplayText(constant));
+				
+				contexts.clear();
+				for(ISeesContext seenContext : ((MatchingMachine)inputElement).getProblemElement().getSeesClauses()) {
+					IContextRoot context = seenContext.getSeenContextRoot();
+					if (context.exists()){
+						for(IContextRoot cr : PatternUtils.getExtendedContext(context))
+							if (!contexts.contains(cr))
+								contexts.add(cr);
 					}
 				}
-					
+				comboContent.clear();
+				for(IContextRoot contextRoot : contexts) {
+					if(!openFiles.contains(contextRoot.getRodinFile()))
+						openFiles.add(contextRoot.getRodinFile());
+					for (ICarrierSet carrierset : contextRoot.getCarrierSets())
+						comboContent.add(PatternUtils.getDisplayText(carrierset));
+					for (IConstant constant : contextRoot.getConstants())
+						comboContent.add(PatternUtils.getDisplayText(constant));
+				}
+									
 				
 			} catch (RodinDBException e) {
 				
@@ -251,11 +268,12 @@ public class MatchingWizardPage extends WizardPage {
 		this.matching = matching;
 		variableGroup.setInput(matching);
 		eventGroup.setInput(matching);
-//		this.carrierSetRenaming = carrierSetRenaming;
-//		this.constantRenaming = constantRenaming;
-//		data.loadReplacement();
+		this.carrierSetRenaming = carrierSetRenaming;
+		this.constantRenaming = constantRenaming;
+	//	data.loadReplacement();
 		context.setInput(matching);
 		combo.setItems(comboContent.toArray(new String[comboContent.size()]));
+		
 //		pageChanged.performAction();
 	}
 	

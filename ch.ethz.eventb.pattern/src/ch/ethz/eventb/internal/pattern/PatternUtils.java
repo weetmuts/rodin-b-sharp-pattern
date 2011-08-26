@@ -33,6 +33,7 @@ import org.eventb.core.IAssignmentElement;
 import org.eventb.core.IContextRoot;
 import org.eventb.core.IEvent;
 import org.eventb.core.IEventBRoot;
+import org.eventb.core.IExtendsContext;
 import org.eventb.core.IIdentifierElement;
 import org.eventb.core.ILabeledElement;
 import org.eventb.core.IMachineRoot;
@@ -50,6 +51,7 @@ import org.eventb.core.ast.FormulaFactory;
 import org.eventb.core.ast.FreeIdentifier;
 import org.eventb.core.ast.LanguageVersion;
 import org.eventb.core.ast.Predicate;
+import org.eventb.core.ast.extension.IExtendedFormula;
 import org.eventb.ui.EventBUIPlugin;
 import org.rodinp.core.IInternalElement;
 import org.rodinp.core.IInternalElementType;
@@ -58,6 +60,7 @@ import org.rodinp.core.IRodinFile;
 import org.rodinp.core.IRodinProject;
 import org.rodinp.core.RodinCore;
 import org.rodinp.core.RodinDBException;
+import org.rodinp.internal.core.version.AddAttribute;
 
 import ch.ethz.eventb.internal.pattern.wizards.ComplexMatching;
 import ch.ethz.eventb.internal.pattern.wizards.IComplexMatching;
@@ -479,6 +482,24 @@ public class PatternUtils {
 		}
 		return null;
 	}
+	
+	public static ArrayList<IContextRoot> getExtendedContext(IContextRoot contextRoot) {
+		ArrayList<IContextRoot> result = new ArrayList<IContextRoot>();
+		try {
+			if (contextRoot.exists()) {
+				result.add(contextRoot);
+				for(IExtendsContext clause : contextRoot.getExtendsClauses()) {
+					IContextRoot extended = clause.getAbstractContextRoot();
+					if (extended.exists()) {
+						result.addAll(getExtendedContext(extended));
+					}
+				}
+			}
+		} catch (RodinDBException e) {
+		}
+		return result;
+	}
+	
 	
 
 	public static <T extends ILabeledElement> String renameLabel(String label, Renaming<T> renaming) throws RodinDBException {

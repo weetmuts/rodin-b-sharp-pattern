@@ -1,9 +1,12 @@
 package ch.ethz.eventb.internal.pattern;
 
 import static org.eventb.core.IConfigurationElement.DEFAULT_CONFIGURATION;
+import static ch.ethz.eventb.pattern.EventBPattern.GENERATED_CONFIGURATION;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -127,7 +130,7 @@ public class MachineGenerator implements IMachineGenerator {
 		if (generatePO)
 			generatedMachine.setConfiguration(DEFAULT_CONFIGURATION, null);
 		else
-			generatedMachine.setConfiguration("org.eventb.core.mchBase", null);
+			generatedMachine.setConfiguration(GENERATED_CONFIGURATION, null);
 		// set the new machine to be the refinement of the problem machine
 		IRefinesMachine refinesClause = generatedMachine.getRefinesClause("internal_refineClause");
 		refinesClause.create(null, null);
@@ -310,7 +313,7 @@ public class MachineGenerator implements IMachineGenerator {
 			newInvariant.setComment("Typing information for new variable", null);
 			monitor.worked(1);
 		}
-		
+				
 		// create invariant for disappearing variables
 		for (IVariable disappearingVariable : disappearingVariables) {
 			String problemIdentifier = data.getMatchingOf(disappearingVariable).getIdentifierString();
@@ -357,37 +360,45 @@ public class MachineGenerator implements IMachineGenerator {
 	
 private void copyInvariants(IProgressMonitor monitor) throws RodinDBException, DataException {
 		
+		ArrayList<IMachineRoot> machines = data.getIntermediateMachines(); 
+		machines.add(data.getPatternRefinementMachine());
+				
+		HashSet<String> variables = new HashSet<String>();
+		for (IVariable variable : data.getPatternRefinementMachine().getVariables())
+			variables.add(variable.getIdentifierString());
+		for (IVariable variable : data.getPatternAbstractMachine().getVariables())
+			variables.add(variable.getIdentifierString());
 		
-		IInvariant[] invariants = data.getPatternRefinementMachine().getInvariants();
-		IVariable[] variables = data.getPatternRefinementMachine().getVariables();
-		
-		
-		monitor.beginTask(null , invariants.length);
+		monitor.beginTask(null , IProgressMonitor.UNKNOWN);
 		monitor.subTask("copy invariants");
 		
-		// copy invariants of pattern refinement
-		outer:for (IInvariant invariant : invariants) {
-			String predicate = invariant.getPredicateString();
-			// get all free Identifiers in the invariant
-			List<String> freeIdents = EventBUtils.getPredicateFreeIdentifiers(predicate);
-			// check if any of them is not a variable of the pattern refinement
-			for (String ident : freeIdents)
-				if(!PatternUtils.isInArray(ident, variables))
-					continue outer;
-			IInvariant newInvariant = generatedMachine.getInvariant(INVARIANT_PREFIX + invariantNumber);
-			newInvariant.create(null, null);
-			if (invariant.isTheorem()){
-				newInvariant.setLabel(THEOREM_LABEL + invariantNumber++, null);
-				newInvariant.setTheorem(true, null);
+		for (IMachineRoot machine : machines){
+			
+			// copy invariants of pattern refinement
+			outer:for (IInvariant invariant : machine.getInvariants()) {
+				String predicate = invariant.getPredicateString();
+				// get all free Identifiers in the invariant
+				List<String> freeIdents = EventBUtils.getPredicateFreeIdentifiers(predicate);
+				// check if any of them is not a variable of the pattern refinement
+				for (String ident : freeIdents)
+					if(!variables.contains(ident))
+						continue outer;
+				IInvariant newInvariant = generatedMachine.getInvariant(INVARIANT_PREFIX + invariantNumber);
+				newInvariant.create(null, null);
+				if (invariant.isTheorem()){
+					newInvariant.setLabel(THEOREM_LABEL + invariantNumber++, null);
+					newInvariant.setTheorem(true, null);
+				}
+				else {
+					newInvariant.setLabel(INVARIANT_LABEL + invariantNumber++, null);
+					newInvariant.setTheorem(false, null);
+				}
+				predicate = PatternUtils.substitute(predicate, patternRefinementMap, ff);
+				predicate = PatternUtils.substitute(predicate, patternMap, ff);
+				newInvariant.setPredicateString(predicate, null);
+				newInvariant.setComment("Copied invariant of pattern refinement", null);
+				monitor.worked(1);
 			}
-			else {
-				newInvariant.setLabel(INVARIANT_LABEL + invariantNumber++, null);
-				newInvariant.setTheorem(false, null);
-			}
-			predicate = PatternUtils.substitute(predicate, patternRefinementMap, ff);
-			newInvariant.setPredicateString(predicate, null);
-			newInvariant.setComment("Copied invariant of pattern refinement", null);
-			monitor.worked(1);
 		}
 				
 		monitor.done();

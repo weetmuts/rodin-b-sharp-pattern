@@ -96,5 +96,18 @@
             name="Problem Project">
       </attributeType>
    </extension>
+   <extension
+         point="org.eventb.core.configurations">
+      <configuration
+            id="mchGen"
+            name="Generated Machine">
+         <config
+               id="org.eventb.core.mchBase">
+         </config>
+         <config
+               id="org.eventb.core.mchPOG">
+         </config>
+      </configuration>
+   </extension>
 
 </plugin>
