@@ -113,7 +113,7 @@ public class Data implements IData {
 	private Collection<IVariable> notMatchedProblemVariables;
 	
 	// inside the pattern
-	private Collection<IMachineRoot> intermediatePatternMachines;
+	private ArrayList<IMachineRoot> intermediatePatternMachines;
 	
 	private HashMap<IMachineRoot, Collection<IVariable>> intermediateNewVariables;
 	
@@ -248,7 +248,7 @@ public class Data implements IData {
 		allProblemVariables = new HashSet<IVariable>();
 		matchedProblemVariables = new ArrayList<IVariable>();
 		notMatchedProblemVariables = new ArrayList<IVariable>();
-		intermediatePatternMachines = new HashSet<IMachineRoot>();
+		intermediatePatternMachines = new ArrayList<IMachineRoot>();
 		intermediateNewVariables = new HashMap<IMachineRoot, Collection<IVariable>>();
 		intermediateDisappearingVariables = new HashMap<IMachineRoot, Collection<IVariable>>();
 		variableAppearing = new HashMap<String, IVariable>();
@@ -2241,7 +2241,7 @@ public class Data implements IData {
 					// add guard matching
 					addMatching(
 							PatternUtils.getElementByLabel(IGuard.ELEMENT_TYPE, match.getPatternGuard(), patternEvent),
-							PatternUtils.getElementByLabel(IGuard.ELEMENT_TYPE, match.getPatternGuard(), problemEvent));
+							PatternUtils.getElementByLabel(IGuard.ELEMENT_TYPE, match.getProblemGuard(), problemEvent));
 							
 				// get action matchings
 				for (IActionMatching match : matching.getActionMatchings())
@@ -3392,12 +3392,15 @@ public class Data implements IData {
 	 * @return all intermediate machines between abstract pattern machine and pattern refinement machine
 	 * @throws DataException
 	 */
-	public Collection<IMachineRoot> getIntermediateMachines() throws DataException {
+	public ArrayList<IMachineRoot> getIntermediateMachines() throws DataException {
 		
 		// check initialization
 		if (patternRefinementMachine == null)
 			throw new DataException("Pattern refinement machine not yet initialized");
-		return new HashSet<IMachineRoot>(intermediatePatternMachines);
+		ArrayList<IMachineRoot> machines = new ArrayList<IMachineRoot>(intermediatePatternMachines.size());
+		for (int i= intermediatePatternMachines.size()-1; i>=0; i--)
+			machines.add(intermediatePatternMachines.get(i));
+		return machines;
 		
 	}
 	

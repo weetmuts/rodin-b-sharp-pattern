@@ -11,6 +11,8 @@
 package ch.ethz.eventb.pattern;
 
 
+import static org.eventb.core.EventBPlugin.PLUGIN_ID;
+
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -30,6 +32,8 @@ public class EventBPattern extends AbstractUIPlugin {
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "ch.ethz.eventb.pattern";
+	
+	public static final String GENERATED_CONFIGURATION = PLUGIN_ID + ".mchGen";
 
 	// The shared instance
 	private static EventBPattern plugin;
