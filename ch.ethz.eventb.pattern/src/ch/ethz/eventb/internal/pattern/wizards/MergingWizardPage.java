@@ -91,7 +91,6 @@ public class MergingWizardPage extends WizardPage {
 		 */
 		public Object[] getElements(Object inputElement) {
 			return ((Collection<IEvent>)inputElement).toArray(new IEvent[((Collection<IEvent>)inputElement).size()]);
-				
 		}
 		
 	}

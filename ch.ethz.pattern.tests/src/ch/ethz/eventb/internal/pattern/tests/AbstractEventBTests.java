@@ -28,6 +28,7 @@ import org.eventb.core.IAxiom;
 import org.eventb.core.ICarrierSet;
 import org.eventb.core.IConstant;
 import org.eventb.core.IContextRoot;
+import org.eventb.core.IConvergenceElement.Convergence;
 import org.eventb.core.IEvent;
 import org.eventb.core.IEventBProject;
 import org.eventb.core.IExtendsContext;
@@ -40,7 +41,6 @@ import org.eventb.core.IRefinesMachine;
 import org.eventb.core.ISeesContext;
 import org.eventb.core.IVariable;
 import org.eventb.core.IWitness;
-import org.eventb.core.IConvergenceElement.Convergence;
 import org.junit.After;
 import org.junit.Before;
 import org.rodinp.core.IRodinFile;
@@ -528,7 +528,7 @@ public abstract class AbstractEventBTests extends TestCase {
 					fail("Do not expect refine clause for  " + absEvtLabel);
 				}
 			}
-		} catch (RodinDBException e) {
+		} catch (CoreException e) {
 			e.printStackTrace();
 			fail("There should be no exception");
 			return;

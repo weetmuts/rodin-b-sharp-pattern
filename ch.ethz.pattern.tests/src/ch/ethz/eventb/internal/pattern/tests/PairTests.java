@@ -96,7 +96,7 @@ public class PairTests extends EventBTests {
 	public void testSetSecond() {
 		
 		assertFalse(secondPair.snd == evt1_3_4);
-		firstPair.setSecond(evt1_3_4);
+		secondPair.setSecond(evt1_3_4);
 		assertTrue(secondPair.snd == evt1_3_4);
 	}
 

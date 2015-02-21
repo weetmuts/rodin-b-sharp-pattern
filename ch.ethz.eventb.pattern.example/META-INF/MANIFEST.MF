@@ -2,10 +2,15 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Example how to use the pattern plug-in
 Bundle-SymbolicName: ch.ethz.eventb.pattern.example;singleton:=true
-Bundle-Version: 1.1.1.qualifier
+Bundle-Version: 0.9.0.qualifier
 Bundle-Activator: ch.ethz.eventb.pattern.example.Activator
 Require-Bundle: ch.ethz.eventb.pattern;bundle-version="0.8.0",
  org.eclipse.help.ui;bundle-version="3.3.102",
- org.eventb.ui;bundle-version="1.2.0"
+ org.eventb.ui;bundle-version="1.2.0",
+ org.eventb.core;bundle-version="3.0.0",
+ org.rodinp;bundle-version="1.7.0",
+ org.rodinp.core;bundle-version="1.7.0",
+ org.eventb.core.ast;bundle-version="3.0.0",
+ org.eclipse.core.resources;bundle-version="3.8.1"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy

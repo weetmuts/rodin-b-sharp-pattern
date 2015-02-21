@@ -40,7 +40,7 @@ import org.eventb.core.ast.FreeIdentifier;
 import org.eventb.core.ast.Predicate;
 import org.eventb.core.ast.SourceLocation;
 import org.eventb.core.ast.Type;
-import org.eventb.core.seqprover.eventbExtensions.Lib;
+import org.eventb.core.seqprover.eventbExtensions.DLib;
 import org.rodinp.core.IInternalElement;
 import org.rodinp.core.IRodinDB;
 import org.rodinp.core.IRodinElement;
@@ -59,7 +59,11 @@ import org.rodinp.core.RodinDBException;
  */
 public class EventBUtils {
 
-	// =========================================================================
+	// The instance of formula factory will be used through out.
+		private static final FormulaFactory FORMULA_FACTORY = FormulaFactory
+				.getDefault();
+		
+    // =========================================================================
 	// Projects
 	// =========================================================================
 	/**
@@ -460,20 +464,10 @@ public class EventBUtils {
 	 * @param var
 	 *            a variable identifier.
 	 * @return the typing predicate string for the input variable identifier.
-	 * @throws RodinDBException
-	 *             if some errors occurred when
-	 *             <ul>
-	 *             <li>getting the list of static checked variables from the
-	 *             static checked machine
-	 *             {@link ISCMachineRoot#getSCVariables()}.</li>
-	 *             <li>getting the identifier string of any static checked
-	 *             variable {@link ISCVariable#getIdentifierString()}.</li>
-	 *             <li>getting the type of the static checked variable
-	 *             {@link ISCVariable#getType(FormulaFactory)}.</li>
-	 *             </ul>
+	 * @throws CoreException 
 	 */
 	public static String getTypingTheorem(IMachineRoot src, String var)
-			throws RodinDBException {
+			throws CoreException {
 		if (!src.exists())
 			return null;
 		ISCMachineRoot mchSC = src.getSCMachineRoot();
@@ -483,8 +477,7 @@ public class EventBUtils {
 		for (ISCVariable varSC : varSCs) {
 			if (varSC.getIdentifierString().equals(var)) {
 				Type type = varSC.getType(FormulaFactory.getDefault());
-				return var + " ∈ " //$NON-NLS-1$
-						+ type.toExpression(FormulaFactory.getDefault());
+				return var + " ∈ " + type.toExpression();
 			}
 		}
 		return null;
@@ -1075,7 +1068,7 @@ public class EventBUtils {
 	 */
 	public static List<String> getPredicateFreeIdentifiers(
 			String predicateString) {
-		Predicate parsePredicate = Lib.parsePredicate(predicateString);
+		Predicate parsePredicate = DLib.parsePredicate(FORMULA_FACTORY, predicateString);
 		return toStringList(parsePredicate.getSyntacticallyFreeIdentifiers());
 	}
 
@@ -1090,7 +1083,7 @@ public class EventBUtils {
 	 */
 	public static List<String> getAssignmentFreeIdentifiers(
 			String assignmentString) {
-		Assignment parseAssignment = Lib.parseAssignment(assignmentString);
+		Assignment parseAssignment = DLib.parseAssignment(FORMULA_FACTORY, assignmentString);
 		return toStringList(parseAssignment.getSyntacticallyFreeIdentifiers());
 	}
 

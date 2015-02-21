@@ -51,7 +51,6 @@ import org.eventb.core.ICarrierSet;
 import org.eventb.core.IConstant;
 import org.eventb.core.IContextRoot;
 import org.eventb.core.IEvent;
-import org.eventb.core.IExtendsContext;
 import org.eventb.core.IGuard;
 import org.eventb.core.IMachineRoot;
 import org.eventb.core.ISeesContext;
@@ -59,14 +58,13 @@ import org.eventb.core.IVariable;
 import org.eventb.core.ast.Assignment;
 import org.eventb.core.ast.FormulaFactory;
 import org.eventb.core.ast.FreeIdentifier;
-import org.eventb.core.ast.LanguageVersion;
 import org.rodinp.core.IInternalElement;
 import org.rodinp.core.IRodinDB;
 import org.rodinp.core.IRodinFile;
 import org.rodinp.core.IRodinProject;
 import org.rodinp.core.RodinCore;
 import org.rodinp.core.RodinDBException;
-import org.rodinp.keyboard.RodinKeyboardPlugin;
+import org.rodinp.keyboard.ui.RodinKeyboardUIPlugin;
 
 import ch.ethz.eventb.internal.pattern.ActionPerformer;
 import ch.ethz.eventb.internal.pattern.Data;
@@ -125,7 +123,7 @@ public class MatchingWizardPage extends WizardPage {
 	
 	private Data data;
 	
-	private RodinKeyboardPlugin keyboard = RodinKeyboardPlugin.getDefault();
+	private RodinKeyboardUIPlugin keyboard = RodinKeyboardUIPlugin.getDefault();
 	
 		
 
@@ -778,24 +776,6 @@ public class MatchingWizardPage extends WizardPage {
 			problemMachineChanged();
 		}
 	}
-
-	private boolean checkProblemMachine() {
-		IMachineRoot problemMachine = problemGroup.getMachineChooser().getElement();
-		if (problemMachine == null)
-			return false;
-		else if (!problemMachine.getSCMachineRoot().exists())
-			return false;
-		return true;
-	}
-	
-	private boolean checkPatternMachine() {
-		IMachineRoot patternMachine = patternGroup.getMachineChooser().getElement();
-		if (patternMachine == null)
-			return false;
-		else if (!patternMachine.getSCMachineRoot().exists())
-			return false;
-		return true;
-	}
 	
 	private void matchingChanged() {
 		IMachineRoot problemMachine = problemGroup.getMachineChooser().getElement();
@@ -929,7 +909,7 @@ public class MatchingWizardPage extends WizardPage {
 			for (IEvent event : problemGroup.getMachineChooser().getElement().getEvents()) {
 				if (!PatternUtils.isInMatchings(null, event, eventGroup.getMatchings())){
 					for (IAction action : event.getActions()){
-						assignment = ff.parseAssignment(action.getAssignmentString(), LanguageVersion.LATEST, null).getParsedAssignment();
+						assignment = ff.parseAssignment(action.getAssignmentString(), null).getParsedAssignment();
 						for (FreeIdentifier free : assignment.getAssignedIdentifiers())
 							if (variables.contains(free.getName()))
 								return "The not-matched event '" + event.getLabel() + "' alters the matched variable '" + free.getName() + "'!";

@@ -274,6 +274,8 @@ public class RenamingWizardPage extends WizardPage {
 		    }
 
 		});
+		// Pack the table to take into account the table width
+		variables.getTable().pack();
 		
 		renamedVars.setEditingSupport(new EditingSupport(variables) {
 
@@ -376,7 +378,8 @@ public class RenamingWizardPage extends WizardPage {
 		    }
 
 		});
-		
+		// Pack to take into account the column width.
+		events.getTable().pack();
 		renamedEvts.setEditingSupport(new EditingSupport(events) {
 
 		    @Override

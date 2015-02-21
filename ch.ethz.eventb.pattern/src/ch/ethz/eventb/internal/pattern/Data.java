@@ -23,7 +23,6 @@ import org.eventb.core.IWitness;
 import org.eventb.core.ast.Expression;
 import org.eventb.core.ast.FormulaFactory;
 import org.eventb.core.ast.FreeIdentifier;
-import org.eventb.core.ast.LanguageVersion;
 import org.eventb.core.ast.Predicate;
 import org.rodinp.core.IRodinElement;
 import org.rodinp.core.IRodinProject;
@@ -952,7 +951,7 @@ public class Data implements IData {
 				// add witness to parameterReplacement
 				parameterReplacement.put(witness, ff.makeFreeIdentifier("replace", null));
 				// get the predicate of the witness
-				Predicate predicate = ff.parsePredicate(witness.getPredicateString(), LanguageVersion.LATEST, null).getParsedPredicate();
+				Predicate predicate = ff.parsePredicate(witness.getPredicateString(), null).getParsedPredicate();
 				if (predicate == null)
 					throw new DataException("Error while parsing witness predicate.");
 				// get all free identifiers
@@ -2035,7 +2034,7 @@ public class Data implements IData {
 		}
 		
 		// parse expression
-		Expression expression = ff.parseExpression(replacement, LanguageVersion.LATEST, null).getParsedExpression();
+		Expression expression = ff.parseExpression(replacement, null).getParsedExpression();
 		if (expression == null)
 			throw new DataException("Given replacement is not an expression.");
 		if(!forwardDependencies.containsKey(variable))
@@ -2076,7 +2075,7 @@ public class Data implements IData {
 		}
 		
 		// parse expression
-		Expression expression = ff.parseExpression(replacement, LanguageVersion.LATEST, null).getParsedExpression();
+		Expression expression = ff.parseExpression(replacement, null).getParsedExpression();
 		
 		if (expression == null)
 			throw new DataException("Given replacement is not an expression.");
@@ -2121,7 +2120,7 @@ public class Data implements IData {
 			throw new DataException("Witness not for a relevant parameter.");
 		
 		// parse expression
-		Expression expression = ff.parseExpression(replacement, LanguageVersion.LATEST, null).getParsedExpression();
+		Expression expression = ff.parseExpression(replacement, null).getParsedExpression();
 		if (expression == null)
 			throw new DataException("Given replacement is not an expression.");
 			
