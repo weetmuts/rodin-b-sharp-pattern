@@ -2,7 +2,7 @@
 <feature
       id="ch.ethz.eventb.pattern_feature"
       label="%featureName"
-      version="1.0.3.qualifier"
+      version="0.9.0.qualifier"
       provider-name="%providerName">
 
    <description>
@@ -17,17 +17,34 @@
       %license
    </license>
 
-   <url>
-      <update label="ETHZ Update Site" url="http://people.inf.ethz.ch/fuersta/update-site"/>
-   </url>
-
    <requires>
       <import plugin="org.eventb.ui" version="1.1.0" match="greaterOrEqual"/>
-      <import plugin="org.rodinp.keyboard" version="1.0.0" match="greaterOrEqual"/>
+      <import plugin="org.rodinp.keyboard.core" version="2.0.0" match="greaterOrEqual"/>
+      <import plugin="org.rodinp.keyboard.ui" version="2.0.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.core.runtime" version="3.8.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.jface" version="3.8.0" match="greaterOrEqual"/>
+      <import plugin="org.eventb.core" version="3.0.0" match="greaterOrEqual"/>
+      <import plugin="org.rodinp.core" version="1.7.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.ui" version="3.8.2" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.core.resources" version="3.8.1" match="greaterOrEqual"/>
+      <import plugin="org.eventb.core.ast" version="3.0.0" match="greaterOrEqual"/>
+      <import plugin="org.eventb.core.seqprover" version="3.0.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.ui.ide" version="3.8.2" match="greaterOrEqual"/>
+      <import plugin="ch.ethz.eventb.pattern" version="0.8.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.help.ui" version="3.3.102" match="greaterOrEqual"/>
+      <import plugin="org.eventb.ui" version="1.2.0" match="greaterOrEqual"/>
+      <import plugin="org.rodinp" version="1.7.0" match="greaterOrEqual"/>
    </requires>
 
    <plugin
          id="ch.ethz.eventb.pattern"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="ch.ethz.eventb.pattern.example"
          download-size="0"
          install-size="0"
          version="0.0.0"

@@ -3,8 +3,6 @@ package ch.ethz.eventb.internal.pattern.wizards;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -16,9 +14,6 @@ import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWizard;
 import org.eventb.core.IMachineRoot;
-import org.eventb.core.ast.Expression;
-import org.eventb.core.ast.FormulaFactory;
-import org.eventb.core.ast.FreeIdentifier;
 import org.rodinp.core.IRodinFile;
 import org.rodinp.core.RodinDBException;
 
@@ -54,17 +49,7 @@ public class EventBPatternWizard extends Wizard implements INewWizard {
 	private ISelection selection;
 	
 	private Collection<IRodinFile> openFiles;
-	
-	private final FormulaFactory ff = FormulaFactory.getDefault();
-	
-	private Map<FreeIdentifier, Expression> specMap;
-	
-	private Map<FreeIdentifier, Expression> refMap;
-	
-	private Map<FreeIdentifier, Expression> probMap;
-	
-	private Map<FreeIdentifier, Expression> paraMap;
-	
+		
 	private Data data;
 	
 	private IMachineRoot generatedMachine;
@@ -78,10 +63,6 @@ public class EventBPatternWizard extends Wizard implements INewWizard {
 		
 			
 		openFiles = new ArrayList<IRodinFile>();
-		specMap = new HashMap<FreeIdentifier, Expression>();
-		refMap = new HashMap<FreeIdentifier, Expression>();
-		probMap = new HashMap<FreeIdentifier, Expression>();
-		paraMap = new HashMap<FreeIdentifier, Expression>();
 		
 		data = new Data();
 	}

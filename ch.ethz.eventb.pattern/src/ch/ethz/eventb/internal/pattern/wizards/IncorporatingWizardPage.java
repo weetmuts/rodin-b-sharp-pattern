@@ -37,6 +37,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eventb.core.IEventBProject;
 import org.eventb.core.IInvariant;
@@ -45,7 +46,7 @@ import org.eventb.core.IVariable;
 import org.eventb.core.IWitness;
 import org.rodinp.core.IRodinFile;
 import org.rodinp.core.RodinDBException;
-import org.rodinp.keyboard.RodinKeyboardPlugin;
+import org.rodinp.keyboard.ui.RodinKeyboardUIPlugin;
 
 import ch.ethz.eventb.internal.pattern.Data;
 import ch.ethz.eventb.internal.pattern.EventBUtils;
@@ -105,7 +106,7 @@ public class IncorporatingWizardPage extends WizardPage {
 
 	private Data data;
 	
-	private RodinKeyboardPlugin keyboard = RodinKeyboardPlugin.getDefault();
+	private RodinKeyboardUIPlugin keyboard = RodinKeyboardUIPlugin.getDefault();
 	
 	
 	private class VariableContentProvider implements ITreeContentProvider {
@@ -379,7 +380,7 @@ public class IncorporatingWizardPage extends WizardPage {
 		invariantGroup.setLayoutData(gd);
 		invariantGroup.setLayout(gl);				
 		
-		invariants = new TableViewer(invariantGroup, SWT.NULL);
+		invariants = new TableViewer(invariantGroup, SWT.BORDER);
 		
 		gd = new GridData(GridData.FILL_BOTH);
 		gd.horizontalSpan = 2;
@@ -402,8 +403,8 @@ public class IncorporatingWizardPage extends WizardPage {
 			}
 		});
 		
-		TableViewerColumn inv = new TableViewerColumn(invariants,SWT.NONE);
-		inv.getColumn().setWidth(100);
+		TableViewerColumn inv = new TableViewerColumn(invariants,SWT.LEFT);
+		inv.getColumn().setWidth(200);
 		inv.setLabelProvider(new CellLabelProvider(){
 		    @Override
 		    public void update(ViewerCell cell) {
@@ -422,11 +423,13 @@ public class IncorporatingWizardPage extends WizardPage {
 		variableGroup.setLayoutData(gd);
 		variableGroup.setLayout(gl);
 		
-		variables = new TreeViewer(variableGroup, SWT.NULL);
+		variables = new TreeViewer(variableGroup, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
 		
 		variables.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
 										
 		variables.setContentProvider(new VariableContentProvider());
+		
+		variables.getTree().setHeaderVisible(true);
 		
 		variables.setAutoExpandLevel(TreeViewer.ALL_LEVELS);
 		
@@ -455,19 +458,21 @@ public class IncorporatingWizardPage extends WizardPage {
 		});
 
 		
-		final TreeViewerColumn originalVariables = new TreeViewerColumn(variables,SWT.NONE);
-		originalVariables.getColumn().setWidth(100);
+		final TreeViewerColumn originalVariables = new TreeViewerColumn(variables,SWT.LEFT);
+		final TreeColumn originalColumn = originalVariables.getColumn();
+		originalColumn.setResizable(true);
+		originalColumn.setText("Original");
+		originalColumn.setWidth(200);
 		originalVariables.setLabelProvider(new CellLabelProvider(){
 		    @Override
 		    public void update(ViewerCell cell) {
-		    	cell.setText(PatternUtils.getDisplayText(cell.getElement()));
-		       
+				cell.setText(PatternUtils.getDisplayText(cell.getElement()));       
 		    }
 
 		});
 		
-		final TreeViewerColumn extractedVars = new TreeViewerColumn(variables,SWT.NONE);
-		extractedVars.getColumn().setWidth(100);
+		final TreeViewerColumn extractedVars = new TreeViewerColumn(variables,SWT.LEFT);
+		extractedVars.getColumn().setWidth(200);
 		extractedVars.setLabelProvider(new CellLabelProvider(){
 		    @Override
 		    public void update(ViewerCell cell) {
@@ -480,6 +485,9 @@ public class IncorporatingWizardPage extends WizardPage {
 			}
 
 		});
+		extractedVars.getColumn().setText("Extracted");
+		// Pack the tree to take into account the set column width
+		variables.getTree().pack(true);
 		
 		extractedVars.setEditingSupport(new EditingSupport(variables) {
 
@@ -526,7 +534,7 @@ public class IncorporatingWizardPage extends WizardPage {
 			@Override
 			public void controlResized(ControlEvent e) {
 				int width = variables.getTree().getSize().x;
-				originalVariables.getColumn().setWidth(width/2);
+				originalColumn.setWidth(width/2);
 				extractedVars.getColumn().setWidth(width/2);
 				super.controlResized(e);
 			}
@@ -682,7 +690,7 @@ public class IncorporatingWizardPage extends WizardPage {
 		
 		
 		final TableViewerColumn originalWitness = new TableViewerColumn(witnesses,SWT.NONE);
-		originalWitness.getColumn().setWidth(100);
+		originalWitness.getColumn().setWidth(200);
 		originalWitness.setLabelProvider(new CellLabelProvider(){
 		    @Override
 		    public void update(ViewerCell cell) {
@@ -695,7 +703,7 @@ public class IncorporatingWizardPage extends WizardPage {
 		});
 		
 		final TableViewerColumn witnessLabel = new TableViewerColumn(witnesses,SWT.NONE);
-		witnessLabel.getColumn().setWidth(100);
+		witnessLabel.getColumn().setWidth(200);
 		witnessLabel.setLabelProvider(new CellLabelProvider(){
 		    @Override
 		    public void update(ViewerCell cell) {
@@ -705,6 +713,8 @@ public class IncorporatingWizardPage extends WizardPage {
 		    }
 
 		});
+		// Pack to take into account the set column width
+		witnesses.getTable().pack();
 		
 		final TableViewerColumn extractedWitness = new TableViewerColumn(witnesses,SWT.NONE);
 		extractedWitness.getColumn().setWidth(200);

@@ -49,9 +49,7 @@ import org.eventb.core.ast.BoundIdentDecl;
 import org.eventb.core.ast.Expression;
 import org.eventb.core.ast.FormulaFactory;
 import org.eventb.core.ast.FreeIdentifier;
-import org.eventb.core.ast.LanguageVersion;
 import org.eventb.core.ast.Predicate;
-import org.eventb.core.ast.extension.IExtendedFormula;
 import org.eventb.ui.EventBUIPlugin;
 import org.rodinp.core.IInternalElement;
 import org.rodinp.core.IInternalElementType;
@@ -60,7 +58,6 @@ import org.rodinp.core.IRodinFile;
 import org.rodinp.core.IRodinProject;
 import org.rodinp.core.RodinCore;
 import org.rodinp.core.RodinDBException;
-import org.rodinp.internal.core.version.AddAttribute;
 
 import ch.ethz.eventb.internal.pattern.wizards.ComplexMatching;
 import ch.ethz.eventb.internal.pattern.wizards.IComplexMatching;
@@ -526,46 +523,46 @@ public class PatternUtils {
 		Assignment assignment;
 		
 		// try to parse the string as an expression 
-		expression = ff.parseExpression(string, LanguageVersion.LATEST, null).getParsedExpression();
+		expression = ff.parseExpression(string, null).getParsedExpression();
 		// if the string is not an expression try to parse it as a predicate
 		if (expression == null) {
-			predicate = ff.parsePredicate(string, LanguageVersion.LATEST, null).getParsedPredicate();
+			predicate = ff.parsePredicate(string, null).getParsedPredicate();
 			// if the string is not a predicate try to parse it as an assignment
 			if (predicate == null) {
-				assignment = ff.parseAssignment(string, LanguageVersion.LATEST, null).getParsedAssignment();
+				assignment = ff.parseAssignment(string, null).getParsedAssignment();
 				// string is not valid
 				if (assignment == null)
 					return string;
 				
 				Collection<FreeIdentifier> leftCollection = new ArrayList<FreeIdentifier>();
 				for(FreeIdentifier free : assignment.getAssignedIdentifiers())
-					leftCollection.add(ff.makeFreeIdentifier(free.substituteFreeIdents(map, ff).toString(), null));
+					leftCollection.add(ff.makeFreeIdentifier(free.substituteFreeIdents(map).toString(), null));
 				FreeIdentifier[] left = leftCollection.toArray(new FreeIdentifier[leftCollection.size()]);
 				if (assignment instanceof BecomesEqualTo) {
 					Collection<Expression> right = new ArrayList<Expression>();
 					Expression[] assRight = ((BecomesEqualTo)assignment).getExpressions();
 					for (Expression expr : assRight)
-						right.add(expr.substituteFreeIdents(map, ff));
+						right.add(expr.substituteFreeIdents(map));
 					assignment = ff.makeBecomesEqualTo(left, right.toArray(new Expression[right.size()]), null);
 				}
 				else if (assignment instanceof BecomesMemberOf) {
 					Expression assRight = ((BecomesMemberOf)assignment).getSet();
-					assignment = ff.makeBecomesMemberOf(left[0], assRight.substituteFreeIdents(map, ff), assignment.getSourceLocation());
+					assignment = ff.makeBecomesMemberOf(left[0], assRight.substituteFreeIdents(map), assignment.getSourceLocation());
 				}
 				else if (assignment instanceof BecomesSuchThat) {
 					Collection<BoundIdentDecl> primedCollection = new ArrayList<BoundIdentDecl>();
 					for (FreeIdentifier l : left)
-						primedCollection.add(l.asPrimedDecl(ff));
+						primedCollection.add(l.asPrimedDecl());
 					BoundIdentDecl[] primed = primedCollection.toArray(new BoundIdentDecl[primedCollection.size()]);
 					Predicate assRight = ((BecomesSuchThat)assignment).getCondition();
-					assignment = ff.makeBecomesSuchThat(left, primed, assRight.substituteFreeIdents(map, ff), assignment.getSourceLocation());
+					assignment = ff.makeBecomesSuchThat(left, primed, assRight.substituteFreeIdents(map), assignment.getSourceLocation());
 				}
 				return assignment.toString();
 			}
-			predicate = predicate.substituteFreeIdents(map, ff);
+			predicate = predicate.substituteFreeIdents(map);
 			return predicate.toString();
 		}
-		expression = expression.substituteFreeIdents(map, ff);
+		expression = expression.substituteFreeIdents(map);
 		return expression.toString();
 	}
 		

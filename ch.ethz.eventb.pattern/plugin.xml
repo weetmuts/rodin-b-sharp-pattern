@@ -19,7 +19,7 @@
             base-type="org.rodinp.core.rodin"
             file-extensions="pat"
             id="patternFile"
-            name="Event-B Pattern Root"
+            name="Event-B Pattern File"
             priority="normal">
       </content-type>
    </extension>
@@ -27,14 +27,14 @@
          point="org.rodinp.core.fileAssociations">
       <fileAssociation
             content-type-id="ch.ethz.eventb.pattern.patternFile"
-            root-element-type="ch.ethz.eventb.pattern.patternFile">
+            root-element-type="ch.ethz.eventb.pattern.patternRoot">
       </fileAssociation>
    </extension>
    <extension
          point="org.rodinp.core.internalElementTypes">
       <internalElementType
             class="ch.ethz.eventb.pattern.core.basis.PatternRoot"
-            id="patternFile"
+            id="patternRoot"
             name="Event-B Pattern Root">
       </internalElementType>
       <internalElementType
@@ -108,6 +108,24 @@
                id="org.eventb.core.mchPOG">
          </config>
       </configuration>
+   </extension>
+   <extension
+         point="org.rodinp.core.itemRelations">
+      <relationship
+            parentTypeId="ch.ethz.eventb.pattern.patternRoot">
+         <childType
+               typeId="ch.ethz.eventb.pattern.variableMatching">
+         </childType>
+         <childType
+               typeId="ch.ethz.eventb.pattern.eventMatching">
+         </childType>
+         <childType
+               typeId="ch.ethz.eventb.pattern.carrierSetMatching">
+         </childType>
+         <childType
+               typeId="ch.ethz.eventb.pattern.constantMatching">
+         </childType>
+      </relationship>
    </extension>
 
 </plugin>

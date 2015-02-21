@@ -164,13 +164,13 @@ public class ExtendedMatchingGroup {
 	private class MatchingLabelProvider implements ILabelProvider {
 
 		public Image getImage(Object element) {
-			if (element instanceof Matching && ((Matching)element).getType().equals(IGuard.ELEMENT_TYPE))
+			if (element instanceof Matching && ((Matching<?>)element).getType().equals(IGuard.ELEMENT_TYPE))
 				return EventBUIPlugin.getDefault().getImageRegistry().get(IEventBSharedImages.IMG_GUARD);
-			else if (element instanceof Matching && ((Matching)element).getType().equals(IParameter.ELEMENT_TYPE))
+			else if (element instanceof Matching && ((Matching<?>)element).getType().equals(IParameter.ELEMENT_TYPE))
 				return EventBUIPlugin.getDefault().getImageRegistry().get(IEventBSharedImages.IMG_PARAMETER);
-			else if (element instanceof Matching && ((Matching)element).getType().equals(IAction.ELEMENT_TYPE))
+			else if (element instanceof Matching && ((Matching<?>)element).getType().equals(IAction.ELEMENT_TYPE))
 				return EventBUIPlugin.getDefault().getImageRegistry().get(IEventBSharedImages.IMG_ACTION);
-			else if (element instanceof ComplexMatching && ((ComplexMatching)element).getType().equals(IEvent.ELEMENT_TYPE))
+			else if (element instanceof ComplexMatching && ((ComplexMatching<?>)element).getType().equals(IEvent.ELEMENT_TYPE))
 				return EventBUIPlugin.getDefault().getImageRegistry().get(IEventBSharedImages.IMG_EVENT);
 			else
 			
@@ -287,10 +287,6 @@ public class ExtendedMatchingGroup {
 		viewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
 		
 		viewer.addDoubleClickListener(new IDoubleClickListener(){
-				
-				
-				
-				
 			public void doubleClick(DoubleClickEvent event) {
 			
 			TreeItem[] sel = viewer.getTree().getSelection();

@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
@@ -290,7 +291,7 @@ public class MachineGenerator implements IMachineGenerator {
 		monitor.done();
 	}
 	
-	private void createInvariants(IProgressMonitor monitor) throws RodinDBException, DataException {
+	private void createInvariants(IProgressMonitor monitor) throws RodinDBException, DataException, CoreException {
 		
 		invariantNumber = 1;
 		
@@ -476,7 +477,7 @@ private void copyInvariants(IProgressMonitor monitor) throws RodinDBException, D
 		}
 	}
 	
-	private void copyNotMatchedProblemEvents(IProgressMonitor monitor) throws RodinDBException, DataException {
+	private void copyNotMatchedProblemEvents(IProgressMonitor monitor) throws CoreException, RodinDBException, DataException {
 		
 		// Not-matched problem events
 		Collection<IEvent> events = data.getNotMatchedProblemEvents();
@@ -610,7 +611,7 @@ private void copyInvariants(IProgressMonitor monitor) throws RodinDBException, D
 		monitor.done();
 	}
 	
-	private void mergeNewPatternRefinementEvents(IProgressMonitor monitor) throws RodinDBException, DataException {
+	private void mergeNewPatternRefinementEvents(IProgressMonitor monitor) throws DataException, CoreException {
 		
 		Collection<IEvent> events = data.getMergedProblemEvents();
 				
@@ -857,7 +858,7 @@ private void copyInvariants(IProgressMonitor monitor) throws RodinDBException, D
 			FreeIdentifier newVar = ff.makeFreeIdentifier(data.getRenamingOf(variable), null);
 			
 			patternRefinementMap.put(oldVar, newVar);
-			patternRefinementMap.put(oldVar.withPrime(ff), newVar.withPrime(ff));
+			patternRefinementMap.put(oldVar.withPrime(), newVar.withPrime());
 		}
 		monitor.worked(1);
 		
@@ -899,7 +900,7 @@ private void copyInvariants(IProgressMonitor monitor) throws RodinDBException, D
 					tempMap.put(ff.makeFreeIdentifier(variable.getIdentifierString(), null),
 					data.getForwardReplacementFor(variable));
 			for (FreeIdentifier var : intermediateMap.keySet())
-				intermediateMap.put(var, intermediateMap.get(var).substituteFreeIdents(tempMap, ff));
+				intermediateMap.put(var, intermediateMap.get(var).substituteFreeIdents(tempMap));
 			refinement = data.getRefinedMachineOf(refinement);
 		}
 		// once again for the pattern refinement machine
@@ -908,7 +909,7 @@ private void copyInvariants(IProgressMonitor monitor) throws RodinDBException, D
 			tempMap.put(ff.makeFreeIdentifier(variable.getIdentifierString(), null),
 				data.getForwardReplacementFor(variable));
 		for (FreeIdentifier var : intermediateMap.keySet())
-			intermediateMap.put(var, intermediateMap.get(var).substituteFreeIdents(tempMap, ff));
+			intermediateMap.put(var, intermediateMap.get(var).substituteFreeIdents(tempMap));
 		//monitor.worked(1);
 		
 		
@@ -917,8 +918,8 @@ private void copyInvariants(IProgressMonitor monitor) throws RodinDBException, D
 		for (IVariable problemVariable : problemVariables) {
 			FreeIdentifier patternVariable = ff.makeFreeIdentifier(problemVariable.getIdentifierString(), null);
 			Expression replacement = ff.makeFreeIdentifier(data.getMatchingOf(problemVariable).getIdentifierString(), null);
-			replacement = replacement.substituteFreeIdents(intermediateMap, ff);
-			replacement = replacement.substituteFreeIdents(patternRefinementMap, ff);
+			replacement = replacement.substituteFreeIdents(intermediateMap);
+			replacement = replacement.substituteFreeIdents(patternRefinementMap);
 			problemMap.put(patternVariable, replacement);
 		}
 		monitor.worked(1);
@@ -953,7 +954,7 @@ private void copyInvariants(IProgressMonitor monitor) throws RodinDBException, D
 					tempMap.put(ff.makeFreeIdentifier(witness.getLabel(), null),
 					data.getReplacementFor(witness));
 			for (FreeIdentifier par : parameterMap.keySet())
-				parameterMap.put(par, parameterMap.get(par).substituteFreeIdents(tempMap, ff));
+				parameterMap.put(par, parameterMap.get(par).substituteFreeIdents(tempMap));
 		}
 		
 	}
