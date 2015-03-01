@@ -14,7 +14,7 @@ import ch.ethz.eventb.pattern.EventBPattern;
 public interface IPatternRoot extends IEventBRoot, ICommentedElement, IConfigurationElement {
 	
 	IInternalElementType<IPatternRoot> ELEMENT_TYPE =
-		RodinCore.getInternalElementType(EventBPattern.PLUGIN_ID + ".patternFile"); //$NON-NLS-1$
+		RodinCore.getInternalElementType(EventBPattern.PLUGIN_ID + ".patternRoot"); //$NON-NLS-1$
 	
 	public String getPatternMachine() throws RodinDBException;
 	

@@ -7,6 +7,8 @@ package ch.ethz.eventb.internal.pattern.tests;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import junit.framework.TestCase;
+
 import org.junit.Test;
 
 import ch.ethz.eventb.internal.pattern.ActionPerformer;
@@ -15,7 +17,7 @@ import ch.ethz.eventb.internal.pattern.ActionPerformer;
  * @author fuersta
  *
  */
-public class ActionPerformerTests extends EventBTests{
+public class ActionPerformerTests extends TestCase {
 
 	protected ActionListener listener_1;
 	

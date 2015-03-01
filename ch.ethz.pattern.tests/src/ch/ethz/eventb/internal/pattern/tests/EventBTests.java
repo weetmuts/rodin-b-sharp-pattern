@@ -31,6 +31,7 @@ import ch.ethz.eventb.internal.pattern.wizards.ComplexMatching;
 import ch.ethz.eventb.internal.pattern.wizards.Matching;
 import ch.ethz.eventb.internal.pattern.wizards.MatchingMachine;
 import ch.ethz.eventb.internal.pattern.wizards.Renaming;
+import ch.ethz.eventb.utils.tests.AbstractEventBTests;
 
 /**
  * @author htson
@@ -326,10 +327,10 @@ public abstract class EventBTests extends AbstractEventBTests {
 	protected void setUp() throws Exception {
 		super.setUp();
 		// Create a few projects
-		P1 = createRodinProject("P1"); //$NON-NLS-1$
-		P2 = createRodinProject("P2"); //$NON-NLS-1$
-		P3 = createRodinProject("P3"); //$NON-NLS-1$
-		P4 = createRodinProject("P4"); //$NON-NLS-1$
+		P1 = createEventBProject("P1"); //$NON-NLS-1$
+		P2 = createEventBProject("P2"); //$NON-NLS-1$
+		P3 = createEventBProject("P3"); //$NON-NLS-1$
+		P4 = createEventBProject("P4"); //$NON-NLS-1$
 		
 		// Create some contexts inside the projects
 		ctx1_1 = createContext(P1, "ctx1_1");
@@ -450,7 +451,7 @@ public abstract class EventBTests extends AbstractEventBTests {
 		//   END
 		//
 		evt1_1_2 = createEvent(mch1_1, "evt1_1_2");
-		grd1_1_2_1 = createGuard(evt1_1_2, "grd1_1_2_1", "y ≠ 0");
+		grd1_1_2_1 = createGuard(evt1_1_2, "grd1_1_2_1", "y ≠ 0", false);
 		act1_1_2_1 = createAction(evt1_1_2, "act1_1_2_1",
 				"x, y :∣ x' = b ∧ y' = y + 2");
 		
@@ -467,8 +468,8 @@ public abstract class EventBTests extends AbstractEventBTests {
 		//
 		evt1_1_3 = createEvent(mch1_1, "evt1_1_3");
 		s = createParameter(evt1_1_3, "s");
-		grd1_1_3_1 = createGuard(evt1_1_3, "grd1_1_3_1", "s ∈ S");
-		grd1_1_3_2 = createGuard(evt1_1_3, "grd1_1_3_2", "y ≥ 5");
+		grd1_1_3_1 = createGuard(evt1_1_3, "grd1_1_3_1", "s ∈ S", false);
+		grd1_1_3_2 = createGuard(evt1_1_3, "grd1_1_3_2", "y ≥ 5", false);
 		act1_1_3_1 = createAction(evt1_1_3, "act1_1_3_1", "x :∈ S ∖ {s}");
 		act1_1_3_2 = createAction(evt1_1_3, "act1_1_3_2", "y :∣ y' = y − 4");
 		
@@ -521,7 +522,7 @@ public abstract class EventBTests extends AbstractEventBTests {
 		// END
 		evt1_2_1 = createEvent(mch1_2, "evt1_2_1");
 		createRefinesEventClause(evt1_2_1, "evt1_1_1");
-		grd1_2_1_1 = createGuard(evt1_2_1, "grd1_2_1_1", "y = 0");
+		grd1_2_1_1 = createGuard(evt1_2_1, "grd1_2_1_1", "y = 0", false);
 		act1_2_1_1 = createAction(evt1_2_1, "act1_2_1_1", "x :∈ {a, b}");
 		act1_2_1_2 = createAction(evt1_2_1, "act1_2_1_2", "v ≔ y + 2");
 		
@@ -536,7 +537,7 @@ public abstract class EventBTests extends AbstractEventBTests {
 		// END
 		evt1_2_1b = createEvent(mch1_2, "evt1_2_1");
 		createRefinesEventClause(evt1_2_1b, "evt1_1_1");
-		grd1_2_1b_1 = createGuard(evt1_2_1b, "grd1_2_1b_1", "y = 0");
+		grd1_2_1b_1 = createGuard(evt1_2_1b, "grd1_2_1b_1", "y = 0", false);
 		act1_2_1b_1 = createAction(evt1_2_1b, "act1_2_1b_1", "x :∈ {a, b}");
 		act1_2_1b_2 = createAction(evt1_2_1b, "act1_2_1b_2", "v ≔ y + 2");
 		
@@ -553,7 +554,7 @@ public abstract class EventBTests extends AbstractEventBTests {
 		evt1_2_2 = createEvent(mch1_2, "evt1_2_2");
 		evt1_2_2.setExtended(true, new NullProgressMonitor());
 		createRefinesEventClause(evt1_2_2, "evt1_1_2");
-		grd1_2_2_1 = createGuard(evt1_2_2, "grd1_2_2_1", "u = f");
+		grd1_2_2_1 = createGuard(evt1_2_2, "grd1_2_2_1", "u = f", false);
 		act1_2_2_1 = createAction(evt1_2_2, "act1_2_2_1", "u ≔ e");
 		act1_2_2_2 = createAction(evt1_2_2, "act1_2_2_2", "v ≔ v + 1");
 		
@@ -569,7 +570,7 @@ public abstract class EventBTests extends AbstractEventBTests {
 		evt1_2_3 = createEvent(mch1_2, "evt1_2_3");
 		evt1_2_3.setExtended(true, new NullProgressMonitor());
 		createRefinesEventClause(evt1_2_3, "evt1_1_3");
-		grd1_2_3_1 = createGuard(evt1_2_3, "grd1_2_3_1", "y > v");
+		grd1_2_3_1 = createGuard(evt1_2_3, "grd1_2_3_1", "y > v", false);
 		act1_2_3_1 = createAction(evt1_2_3, "act1_2_3_1", "v ≔ v + 1");
 		
 		// evt1_2_4
@@ -581,7 +582,7 @@ public abstract class EventBTests extends AbstractEventBTests {
 		//   act1_2_4_2: u := e
 		// END
 		evt1_2_4 = createEvent(mch1_2, "evt1_2_4");
-		grd1_2_4_1 = createGuard(evt1_2_4, "grd1_2_4_1", "v ≥ 3");
+		grd1_2_4_1 = createGuard(evt1_2_4, "grd1_2_4_1", "v ≥ 3", false);
 		act1_2_4_1 = createAction(evt1_2_4, "act1_2_4_1", "v, u ≔ v − 1, e");
 		
 		// Save mch1_2
@@ -638,7 +639,7 @@ public abstract class EventBTests extends AbstractEventBTests {
 		// END
 		evt1_3_1 = createEvent(mch1_3, "evt1_3_1");
 		createRefinesEventClause(evt1_3_1, "evt1_2_1");
-		grd1_3_1_1 = createGuard(evt1_3_1, "grd1_3_1_1", "z = 0");
+		grd1_3_1_1 = createGuard(evt1_3_1, "grd1_3_1_1", "z = 0", false);
 		createWitness(evt1_3_1, "x'", "x' = x");
 		act1_3_1_1 = createAction(evt1_3_1, "act1_3_1_1", "v ≔ 2");
 		
@@ -657,8 +658,8 @@ public abstract class EventBTests extends AbstractEventBTests {
 		// END
 		evt1_3_2 = createEvent(mch1_3, "evt1_3_2");
 		createRefinesEventClause(evt1_3_2, "evt1_2_2");
-		grd1_3_2_1 = createGuard(evt1_3_2, "grd1_3_2_1", "y ≠ 0");
-		grd1_3_2_2 = createGuard(evt1_3_2, "grd1_3_2_2", "u = f");
+		grd1_3_2_1 = createGuard(evt1_3_2, "grd1_3_2_1", "y ≠ 0", false);
+		grd1_3_2_2 = createGuard(evt1_3_2, "grd1_3_2_2", "u = f", false);
 		createWitness(evt1_3_2, "x'", "x' = x");
 		act1_3_2_1 = createAction(evt1_3_2, "act1_3_2_1", "y ≔ y + 2");
 		act1_3_2_2 = createAction(evt1_3_2, "act1_3_2_2", "u ≔ e");
@@ -682,9 +683,9 @@ public abstract class EventBTests extends AbstractEventBTests {
 		evt1_3_3 = createEvent(mch1_3, "evt1_3_3");
 		createRefinesEventClause(evt1_3_3, "evt1_2_3");
 		t = createParameter(evt1_3_3, "t");
-		grd1_3_3_1 = createGuard(evt1_3_3, "grd1_3_3_1", "t ≠ a");
-		grd1_3_3_2 = createGuard(evt1_3_3, "grd1_3_3_2", "y ≥ 5");
-		grd1_3_3_3 = createGuard(evt1_3_3, "grd1_3_3_3", "y > v");
+		grd1_3_3_1 = createGuard(evt1_3_3, "grd1_3_3_1", "t ≠ a", false);
+		grd1_3_3_2 = createGuard(evt1_3_3, "grd1_3_3_2", "y ≥ 5", false);
+		grd1_3_3_3 = createGuard(evt1_3_3, "grd1_3_3_3", "y > v", false);
 		createWitness(evt1_3_3, "s", "s = a");
 		createWitness(evt1_3_3, "x'", "x' = x");
 		act1_3_3_1 = createAction(evt1_3_3, "act1_3_3_1", "y :∣ y' = y − 4");
@@ -704,8 +705,8 @@ public abstract class EventBTests extends AbstractEventBTests {
 		evt1_3_4.setExtended(true, new NullProgressMonitor());
 		createRefinesEventClause(evt1_3_4, "evt1_2_4");
 		createParameter(evt1_3_4, "r");
-		grd1_3_4_1 = createGuard(evt1_3_4, "grd1_3_4_1", "r ∈ ℕ");
-		grd1_3_4_2 = createGuard(evt1_3_4, "grd1_3_4_2", "p(r) = g");
+		grd1_3_4_1 = createGuard(evt1_3_4, "grd1_3_4_1", "r ∈ ℕ", false);
+		grd1_3_4_2 = createGuard(evt1_3_4, "grd1_3_4_2", "p(r) = g", false);
 		act1_3_4_1 = createAction(evt1_3_4, "act1_3_4_1", "p(r) ≔ h");
 		
 		// evt1_3_5
@@ -716,7 +717,7 @@ public abstract class EventBTests extends AbstractEventBTests {
 		//   act1_3_5_1: z := z - 1
 		// END
 		evt1_3_5 = createEvent(mch1_3, "evt1_3_5");
-		grd1_3_5_1 = createGuard(evt1_3_5, "grd1_3_5_1", "z ≥ 2");
+		grd1_3_5_1 = createGuard(evt1_3_5, "grd1_3_5_1", "z ≥ 2", false);
 		act1_3_5_1 = createAction(evt1_3_5, "act1_3_5_1", "z ≔ z − 1");
 		
 		// Save mch1_3

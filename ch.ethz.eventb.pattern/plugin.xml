@@ -14,16 +14,6 @@
       </wizard>
    </extension>
    <extension
-         point="org.eclipse.core.runtime.contentTypes">
-      <content-type
-            base-type="org.rodinp.core.rodin"
-            file-extensions="pat"
-            id="patternFile"
-            name="Event-B Pattern File"
-            priority="normal">
-      </content-type>
-   </extension>
-   <extension
          point="org.rodinp.core.fileAssociations">
       <fileAssociation
             content-type-id="ch.ethz.eventb.pattern.patternFile"
@@ -125,7 +115,101 @@
          <childType
                typeId="ch.ethz.eventb.pattern.constantMatching">
          </childType>
+         <attributeType
+               typeId="ch.ethz.eventb.pattern.patternProject">
+         </attributeType>
+         <attributeType
+               typeId="ch.ethz.eventb.pattern.patternElement">
+         </attributeType>
+         <attributeType
+               typeId="ch.ethz.eventb.pattern.problemProject">
+         </attributeType>
+         <attributeType
+               typeId="ch.ethz.eventb.pattern.problemElement">
+         </attributeType>
       </relationship>
+      <relationship
+            parentTypeId="ch.ethz.eventb.pattern.carrierSetMatching">
+         <attributeType
+               typeId="ch.ethz.eventb.pattern.patternElement">
+         </attributeType>
+         <attributeType
+               typeId="ch.ethz.eventb.pattern.problemElement">
+         </attributeType>
+      </relationship>
+      <relationship
+            parentTypeId="ch.ethz.eventb.pattern.constantMatching">
+         <attributeType
+               typeId="ch.ethz.eventb.pattern.patternElement">
+         </attributeType>
+         <attributeType
+               typeId="ch.ethz.eventb.pattern.problemElement">
+         </attributeType>
+      </relationship>
+      <relationship
+            parentTypeId="ch.ethz.eventb.pattern.variableMatching">
+         <attributeType
+               typeId="ch.ethz.eventb.pattern.patternElement">
+         </attributeType>
+         <attributeType
+               typeId="ch.ethz.eventb.pattern.problemElement">
+         </attributeType>
+      </relationship>
+      <relationship
+            parentTypeId="ch.ethz.eventb.pattern.eventMatching">
+         <childType
+               typeId="ch.ethz.eventb.pattern.parameterMatching">
+         </childType>
+         <childType
+               typeId="ch.ethz.eventb.pattern.guardMatching">
+         </childType>
+         <childType
+               typeId="ch.ethz.eventb.pattern.actionMatching">
+         </childType>
+         <attributeType
+               typeId="ch.ethz.eventb.pattern.patternElement">
+         </attributeType>
+         <attributeType
+               typeId="ch.ethz.eventb.pattern.problemElement">
+         </attributeType>
+      </relationship>
+      <relationship
+            parentTypeId="ch.ethz.eventb.pattern.parameterMatching">
+         <attributeType
+               typeId="ch.ethz.eventb.pattern.patternElement">
+         </attributeType>
+         <attributeType
+               typeId="ch.ethz.eventb.pattern.problemElement">
+         </attributeType>
+      </relationship>
+      <relationship
+            parentTypeId="ch.ethz.eventb.pattern.guardMatching">
+         <attributeType
+               typeId="ch.ethz.eventb.pattern.patternElement">
+         </attributeType>
+         <attributeType
+               typeId="ch.ethz.eventb.pattern.problemElement">
+         </attributeType>
+      </relationship>
+      <relationship
+            parentTypeId="ch.ethz.eventb.pattern.actionMatching">
+         <attributeType
+               typeId="ch.ethz.eventb.pattern.patternElement">
+         </attributeType>
+         <attributeType
+               typeId="ch.ethz.eventb.pattern.problemElement">
+         </attributeType>
+      </relationship>
+   </extension>
+   <extension
+         point="org.eclipse.core.contenttype.contentTypes">
+      <content-type
+            base-type="org.rodinp.core.rodin"
+            file-extensions="pat"
+            id="patternFile"
+            name="Event-B Pattern File"
+            priority="normal">
+      </content-type>
    </extension>
 
 </plugin>
