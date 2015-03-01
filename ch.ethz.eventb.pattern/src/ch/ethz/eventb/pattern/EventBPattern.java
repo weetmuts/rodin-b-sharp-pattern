@@ -11,8 +11,6 @@
 package ch.ethz.eventb.pattern;
 
 
-import static org.eventb.core.EventBPlugin.PLUGIN_ID;
-
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
